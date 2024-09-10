@@ -1,4 +1,4 @@
-import userService from "../services/user.service"
+import userService from "../services/user.service.js";
 
 const postSignupUser = async (req, res) => {
     try {
@@ -7,6 +7,6 @@ const postSignupUser = async (req, res) => {
     } catch (error) {
         return res.status(400).send(error.message);
     }
-}
+};
 
 export default { postSignupUser };

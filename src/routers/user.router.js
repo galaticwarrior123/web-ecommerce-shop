@@ -1,6 +1,7 @@
 import express from "express";
-import userController from "../controller/user.controller";
+import UserController from "../controller/user.controller.js"; // Đảm bảo có .js
+
 const routerAPI = express.Router();
-routerAPI.post("/signup", userController.postSignupUser);
+routerAPI.post("/signup", UserController.postSignupUser);
 
 export default routerAPI;

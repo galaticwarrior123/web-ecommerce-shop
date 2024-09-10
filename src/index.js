@@ -3,7 +3,6 @@ import dotenv from "dotenv";
 import cors from "cors";
 import connection from "./config/db/dbconnection.js";
 import userRoute from "./routers/user.router.js";
-import User from "./model/user.model.js";
 
 dotenv.config();
 

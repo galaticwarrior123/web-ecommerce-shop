@@ -1,8 +1,10 @@
-const bcrypt = require("bcrypt");
+import bcrypt from 'bcrypt';
+import User from '../model/user.model.js';
+
 
 const signupService = async (data) => {
     try {
-        const { email, password } = data; s
+        const { email, password } = data;
         const salt = await bcrypt.genSalt(10);
         const hashedPassword = await bcrypt.hash(password, salt);
 
@@ -14,8 +16,6 @@ const signupService = async (data) => {
     } catch (e) {
         throw e;
     }
-}
-
-export default {
-    signupService,
 };
+
+export default { signupService };
