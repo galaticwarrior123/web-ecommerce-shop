@@ -1,7 +1,7 @@
 import bcrypt from 'bcrypt';
 import User from '../model/user.model.js';
-
-
+import crypto from 'crypto';
+import transporter from '../config/email.transporter.js';
 const signupService = async (data) => {
     try {
         const { email, password } = data;
@@ -17,5 +17,32 @@ const signupService = async (data) => {
         throw e;
     }
 };
+
+const sendOTPService = async (data) => {
+    try {
+        const { email } = data;
+        const user = await User.findOne({ email });
+        if (!user) {
+            throw new Error("User not found");
+        }
+        const otp = crypto.randomInt(100000, 1000000).toString();
+        user.otp = otp;
+        await user.save();
+        const mailOptions = {
+            from: "nguyenducphu200321@gmail.com",
+            to: user.email,
+            subject: `Your OTP for E-commerce Website`,
+            text: `Your OTP is: ${otp}. `,
+        };
+        try {
+            await transporter.sendMail(mailOptions);
+        } catch (err) {
+            throw new Error(err.message);
+        }
+    } catch (error) {
+        throw new Error(error.message);
+    }
+};
+
 
 export default { signupService };

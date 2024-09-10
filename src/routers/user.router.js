@@ -3,5 +3,6 @@ import UserController from "../controller/user.controller.js"; // Đảm bảo c
 
 const routerAPI = express.Router();
 routerAPI.post("/signup", UserController.postSignupUser);
+routerAPI.post("/send-otp", UserController.postSendOTP);
 
 export default routerAPI;

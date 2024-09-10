@@ -9,4 +9,17 @@ const postSignupUser = async (req, res) => {
     }
 };
 
-export default { postSignupUser };
+const postSendOTP = async (req, res) => {
+    try {
+        await userService.sendOTPService(req.body);
+        return res.status(200).send("Send OTP successfully");
+    } catch (error) {
+        return res.status(400).send(error.message);
+    }
+};
+
+
+export default {
+    postSignupUser,
+    postSendOTP,
+};
