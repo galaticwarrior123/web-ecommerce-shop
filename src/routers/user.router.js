@@ -4,6 +4,7 @@ import User from "../model/user.model.js";
 
 const routerAPI = express.Router();
 routerAPI.post("/signup", UserController.postSignupUser);
+routerAPI.post("/login", UserController.postSigninUser);
 routerAPI.post("/send-otp", UserController.postSendOTP);
 routerAPI.post("/verified", UserController.verifiedService);
 export default routerAPI;
