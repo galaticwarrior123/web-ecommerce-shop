@@ -1,9 +1,10 @@
-const express = require("express");
-const dotenv = require("dotenv");
+import express from "express";
+import dotenv from "dotenv";
+import cors from "cors";
+import connection from "./config/database.js";
+import userRoute from "./router/user.route.js";
+
 dotenv.config();
-const cors = require("cors");
-const connection = require("./config/database");
-const userRoute = require("./router/user.route");
 
 const app = express();
 app.use(cors());
@@ -13,6 +14,7 @@ app.use(express.urlencoded({ extended: true }));
 app.use("/api/v1/user", userRoute);
 
 const PORT = process.env.PORT || 3000;
+
 (async () => {
   try {
     await connection();
@@ -20,6 +22,6 @@ const PORT = process.env.PORT || 3000;
       console.log(`Example app listening on port ${PORT}`);
     });
   } catch (e) {
-    console.log(e);
+    console.error(e);
   }
 })();
