@@ -2,6 +2,7 @@ import bcrypt from 'bcrypt';
 import User from '../model/user.model.js';
 import crypto from 'crypto';
 import transporter from '../config/email.transporter.js';
+
 const signupService = async (data) => {
     try {
         const { email, password } = data;
