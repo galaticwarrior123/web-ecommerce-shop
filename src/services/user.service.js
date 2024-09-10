@@ -44,5 +44,27 @@ const sendOTPService = async (data) => {
     }
 };
 
+const verifiedService = async (data) => {
+    try {
+        const { email, otp } = data;
+        const user = await User.findOne({ email });
+        if (!user) {
+            throw new Error("User not found");
+        }
+        if (user.otp !== otp) {
+            throw new Error("OTP is incorrect");
+        }
+        user.is_verified = true;
+        user.otp = null;
+        await user.save();
+    } catch (error) {
+        throw new Error(error.message);
+    }
+};
 
-export default { signupService };
+
+export default {
+    signupService,
+    sendOTPService,
+    verifiedService,
+};

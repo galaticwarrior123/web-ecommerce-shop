@@ -18,8 +18,16 @@ const postSendOTP = async (req, res) => {
     }
 };
 
-
+const verifiedService = async (req, res) => {
+    try {
+        await userService.verifiedService(req.body);
+        return res.status(200).send("Verified successfully");
+    } catch (error) {
+        return res.status(400).send(error.message);
+    }
+};
 export default {
     postSignupUser,
     postSendOTP,
+    verifiedService,
 };
