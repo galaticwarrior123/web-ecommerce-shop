@@ -26,28 +26,8 @@ const verifiedService = async (req, res) => {
         return res.status(400).send(error.message);
     }
 };
-
-// // Gửi yêu cầu OTP để reset mật khẩu
-// export const forgotPassword = async (req, res) => {
-//     const { email } = req.body;
-//     try {
-//         const user = await userService.generateOTP(email);
-//         res.status(200).json({ message: "OTP has been sent to your email", otp: user.otp });
-//     } catch (error) {
-//         res.status(500).json({ message: error.message });
-//     }
-// };
-
-// // Đổi mật khẩu khi đã có OTP
-// export const resetPassword = async (req, res) => {
-//     const { email, otp, newPassword } = req.body;
-//     try {
-//         const user = await userService.verifyOTP(email, otp, newPassword);
-//         res.status(200).json({ message: "Password reset successful" });
-//     } catch (error) {
-//         res.status(500).json({ message: error.message });
-//     }
-// };
-
-
-export default { postSignupUser, postSendOTP, verifiedService };
+export default {
+    postSignupUser,
+    postSendOTP,
+    verifiedService,
+};

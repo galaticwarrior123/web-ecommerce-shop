@@ -1,7 +1,7 @@
 import bcrypt from 'bcrypt';
 import User from '../model/user.model.js';
-import nodemailer from 'nodemailer';
-
+import crypto from 'crypto';
+import transporter from '../config/email.transporter.js';
 const signupService = async (data) => {
     try {
         const { email, password } = data;
@@ -62,59 +62,9 @@ const verifiedService = async (data) => {
     }
 };
 
-// //Create OTP and send through email
-// const generateOTP = async (email) =>{
-//     const user = await User.findOne({email});
-//     if(!user) throw new Error ("User not found");
 
-//     const otp = Math.floor(100000 + Math.random() * 900000).toString();//OTP ngẫu nhiên 6 chữ số
-//     const otpExpires = Date.now() + 10 * 60 * 1000; //OTP hết hạn sau 10p
-
-//     user.otp = otp;
-//     user.otpExpires = otpExpires;
-//     await user.save();
-
-//     //Gửi email OTP
-//     const transporter = nodemailer.createTransport({
-//         service: 'Gmail',
-//         auth:{
-//             user: "hapbeehotel@gmail.com",
-//             pass: "xsdh osai clee vwam"
-//         }
-//     });
-
-//     const mailOptions = {
-//         from: "hapbeehotel@gmail.com",
-//         to: email,
-//         subject: "Your OTP code",
-//         text: "Your OTP code is ${otp}. It will expire in 10 minutes."
-//     };
-
-//     await transporter.sendMail(mailOptions);
-
-//     return user;
-// }
-
-// // Xác thực OTP và thay đổi mật khẩu
-// const verifyOTP = async (email, otp, newPassword) => {
-//     const user = await User.findOne({ email });
-//     if (!user) throw new Error("User not found");
-
-//     if (user.otp !== otp || Date.now() > user.otpExpires) {
-//         throw new Error("Invalid or expired OTP");
-//     }
-
-//     // Hash mật khẩu mới với bcrypt
-//     const salt = await bcrypt.genSalt(10);
-//     const hashedPassword = await bcrypt.hash(newPassword, salt);
-
-//     // Cập nhật mật khẩu và xóa OTP
-//     user.password = hashedPassword;
-//     user.otp = null;
-//     user.otpExpires = null;
-//     await user.save();
-
-//     return user;
-// };
-
-export default { signupService, sendOTPService, verifiedService };
+export default {
+    signupService,
+    sendOTPService,
+    verifiedService,
+};
