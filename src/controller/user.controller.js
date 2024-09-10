@@ -1,4 +1,6 @@
-import userService from "../services/user.service"
+import userService from "../services/user.service.js";
+
+
 
 const postSignupUser = async (req, res) => {
     try {
@@ -7,6 +9,16 @@ const postSignupUser = async (req, res) => {
     } catch (error) {
         return res.status(400).send(error.message);
     }
+};
+
+
+const postSigninUser = async (req, res) => {
+    try {
+        const user = await userService.signinService(req.body);
+        return res.status(200).send(user);
+    } catch (error) {
+        return res.status(400).send(error.message);
+    }
 }
 
-export default { postSignupUser };
+export default { postSignupUser, postSigninUser };
