@@ -90,10 +90,46 @@ const signinService = async (data) => {
     }
 }
 
+//Hàm quên mật khẩu và gửi OTP
+const forgotPasswordService = async(data) =>{
+    try {
+        const {email} = data;
+        const user = await User.findOne({email});
+        if(!user){
+            throw new Error("User not found!");
+        }
+
+        //Tạo OTP và lưu vào database với thời gian hết hạn
+        const   otp = crypto.randomInt(100000, 1000000).toString();
+        user.otp = otp;
+        user.otpExpires = Date.now() + 10 * 60 * 1000;
+        await user.save();
+
+        //Gửi OTP qua email
+        const mailOptions = {
+            from: "nguyenducphu200321@gmail.com",
+            to: user.email,
+            subject: `Your OTP for Password Reset`,
+            text: `Your OTP for password reset is: ${otp}. It will expire in 10 minutes. `,
+        };
+
+        try {
+            await transporter.sendMail(mailOptions);
+            return {message: "OTP sent successfully!"};
+        } catch (err) {
+            throw new Error(err.message);
+        }
+    } catch (error) {
+        throw new Error(error.message);
+    }
+}
+
 
 export default {
     signupService,
     sendOTPService,
     verifiedService,
-    signinService
+    signinService,
+    
+    forgotPasswordService
 };

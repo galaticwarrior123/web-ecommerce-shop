@@ -36,10 +36,22 @@ const verifiedService = async (req, res) => {
         return res.status(400).send(error.message);
     }
 };
+
+const forgotPassword = async(req, res) =>{
+    try{
+        await userService.forgotPasswordService(req.body);
+        return res.status(200).send("Found user successfully and OTP is sent!");
+    } catch (error){
+        return res.status(400).send(error.message);
+    }
+};
+
 export default {
     postSignupUser,
     postSendOTP,
     verifiedService,
-    postSigninUser
+    postSigninUser,
+
+    forgotPassword
 };
 
