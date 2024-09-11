@@ -1,9 +1,11 @@
 import bcrypt from 'bcrypt';
 import User from '../model/user.model.js';
+import jwt from 'jsonwebtoken';
+const JWT_SECRET = process.env.JWT_SECRET || 'your_jwt_secret';
 import crypto from 'crypto';
 import transporter from '../config/email.transporter.js';
 import jwt from 'jsonwebtoken';
-const JWT_SECRET = process.env.JWT_SECRET || 'your_jwt_secret';
+// const JWT_SECRET = process.env.JWT_SECRET || 'your_jwt_secret';
 
 const signupService = async (data) => {
     try {
@@ -58,7 +60,7 @@ const verifiedService = async (data) => {
         if (user.otp !== otp) {
             throw new Error("OTP is incorrect");
         }
-        user.is_verified = true;
+        user.isVerified = true;
         user.otp = null;
         await user.save();
     } catch (error) {
