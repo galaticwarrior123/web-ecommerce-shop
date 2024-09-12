@@ -48,6 +48,15 @@ const forgotPassword_sendOTP = async(req, res) =>{
     }
 };
 
+const verifyOTPForgotPassword = async(req, res) => {
+    try {
+        await userService.verifyOTPForgotPassword(req.body);
+        return res.status(200).json({message: "OTP is verified successfully!"});
+    } catch (error) {
+        return res.status(400).json({error: error.message});
+    }
+}
+
 
 
 
@@ -57,6 +66,7 @@ export default {
     verifiedService,
     postSigninUser,
 
-    forgotPassword_sendOTP
+    forgotPassword_sendOTP,
+    verifyOTPForgotPassword
 };
 

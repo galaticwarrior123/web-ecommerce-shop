@@ -89,6 +89,7 @@ const signinService = async (data) => {
     }
 }
 
+//XỬ LÝ QUÊN MẬT KHẨU 
 //Hàm quên mật khẩu và gửi OTP
 const forgotPassword_sendOTPService = async (data) => {
     try {
@@ -129,6 +130,24 @@ const forgotPassword_sendOTPService = async (data) => {
     }    
 }
 
+const verifyOTPForgotPassword = async(data) => {
+    try {
+        const { email, otp } = data;
+        const user = await User.findOne({ email });
+        if (!user) {
+            throw new Error("User not found");
+        }
+        if (user.otp !== otp) {
+            throw new Error("OTP is incorrect");
+        }
+        user.isVerified = true;
+        user.otp = null; //đã nhập đúng otp
+        await user.save();
+    } catch (error) {
+        throw new Error(error.message);
+    }
+}
+
 
 export default {
     signupService,
@@ -136,5 +155,6 @@ export default {
     verifiedService,
     signinService,
 
-    forgotPassword_sendOTPService
+    forgotPassword_sendOTPService,
+    verifyOTPForgotPassword
 };

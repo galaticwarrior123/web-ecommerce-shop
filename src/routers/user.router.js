@@ -9,5 +9,7 @@ routerAPI.post("/send-otp", UserController.postSendOTP);
 routerAPI.post("/verified", UserController.verifiedService);
 
 routerAPI.post("/forgot-password", UserController.forgotPassword_sendOTP);
+routerAPI.post("/verify-otp_forgotpassword", UserController.verifyOTPForgotPassword);
+
 
 export default routerAPI;
