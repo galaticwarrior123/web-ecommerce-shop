@@ -8,5 +8,6 @@ routerAPI.post("/login", UserController.postSigninUser);
 routerAPI.post("/send-otp", UserController.postSendOTP);
 routerAPI.post("/verified", UserController.verifiedService);
 
-routerAPI.post("/forgot-password", UserController.forgotPassword);
+routerAPI.post("/forgot-password", UserController.forgotPassword_sendOTP);
+
 export default routerAPI;
