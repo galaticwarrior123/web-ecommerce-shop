@@ -122,15 +122,17 @@ const forgotPassword_sendOTPService = async (data) => {
         } catch (err) {
             throw new Error(err.message);
         }
-        
+
         return { message: "OTP sent successfully!" };
 
     } catch (error) {
         throw new Error(error.message);
-    }    
+    }
 }
 
-const verifyOTPForgotPassword = async(data) => {
+//Hàm xác nhận OTP của Forgot Password
+const verifyOTPForgotPasswordService = async (data) => {
+    //Bước 3: Xác nhận OTP của Forgot Password
     try {
         const { email, otp } = data;
         const user = await User.findOne({ email });
@@ -140,12 +142,46 @@ const verifyOTPForgotPassword = async(data) => {
         if (user.otp !== otp) {
             throw new Error("OTP is incorrect");
         }
+        if (user.otpExpires < Date.now()) {
+            return res.status(400).send('OTP is expired');
+        }
         user.isVerified = true;
-        user.otp = null; //đã nhập đúng otp
+        user.otp = otp;
         await user.save();
+
     } catch (error) {
         throw new Error(error.message);
     }
+}
+
+//Hàm đổi mật khẩu
+const changePasswordService = async (data) => {
+    try {
+        //Bước 4: Đổi mật khẩu
+        const { email, otp, newPassword } = data;
+        const user = await User.findOne({ email, otp });
+        if (!user) {
+            throw new Error("User not found");
+        }
+        if (user.otp !== otp) {
+            throw new Error("OTP is incorrect");
+        }
+        if (user.otpExpires < Date.now()) {
+            return res.status(400).send('OTP is expired');
+        }
+
+        user.password = await bcrypt.hash(newPassword, 10);
+        user.otp = null;
+        user.otpExpires = null;
+        await user.save();
+
+        // res.send('Password reset successful');
+    } catch (error) {
+        throw new Error(error.message);
+    }
+
+
+
 }
 
 
@@ -156,5 +192,6 @@ export default {
     signinService,
 
     forgotPassword_sendOTPService,
-    verifyOTPForgotPassword
+    verifyOTPForgotPasswordService,
+    changePasswordService
 };

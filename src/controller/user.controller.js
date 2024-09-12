@@ -50,8 +50,17 @@ const forgotPassword_sendOTP = async(req, res) =>{
 
 const verifyOTPForgotPassword = async(req, res) => {
     try {
-        await userService.verifyOTPForgotPassword(req.body);
+        await userService.verifyOTPForgotPasswordService(req.body);
         return res.status(200).json({message: "OTP is verified successfully!"});
+    } catch (error) {
+        return res.status(400).json({error: error.message});
+    }
+}
+
+const changePassword = async(req, res) => {
+    try {
+        await userService.changePasswordService(req.body);
+        return res.status(200).json({message: "Password is changed successfully!"});
     } catch (error) {
         return res.status(400).json({error: error.message});
     }
@@ -67,6 +76,7 @@ export default {
     postSigninUser,
 
     forgotPassword_sendOTP,
-    verifyOTPForgotPassword
+    verifyOTPForgotPassword,
+    changePassword
 };
 
