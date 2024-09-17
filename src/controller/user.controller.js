@@ -1,5 +1,6 @@
 import userService from "../services/user.service.js";
-
+import { loginDto } from "../dto/login.dto.js";
+import { validate } from "class-validator";
 
 
 const postSignupUser = async (req, res) => {
@@ -14,9 +15,17 @@ const postSignupUser = async (req, res) => {
 
 
 const postSigninUser = async (req, res) => {
+    const { email, password } = req.body;
+    const loginData = new loginDto(email, password);
+    const errors = await validate(loginData);
+
+    if (errors.length > 0) {
+        return res.status(400).send(errors);
+    }
+
     try {
-        const user = await userService.signinService(req.body);
-        return res.status(200).send(user);
+        const { user, token } = await userService.signinService(req.body);
+        return res.status(200).send({ user, token });
     } catch (error) {
         return res.status(400).send(error.message);
     }

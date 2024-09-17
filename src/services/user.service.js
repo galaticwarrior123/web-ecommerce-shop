@@ -4,6 +4,7 @@ import jwt from 'jsonwebtoken';
 const JWT_SECRET = process.env.JWT_SECRET || 'your_jwt_secret'; 
 import crypto from 'crypto';
 import transporter from '../config/email.transporter.js';
+import { loginDto } from '../dto/login.dto.js';
 
 const signupService = async (data) => {
     try {
@@ -21,11 +22,11 @@ const signupService = async (data) => {
     }
 };
 
-const signinService = async (data) => {
+const signinService = async (loginDto) => {
     try {
-        const { email, password } = data;
+        
         let user = await User.findOne({
-            email,
+            
         });
         if (!user) {
             throw new Error("User not found");
