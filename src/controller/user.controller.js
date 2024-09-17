@@ -1,6 +1,5 @@
 import userService from "../services/user.service.js";
-import { loginDto } from "../dto/login.dto.js";
-import { validate } from "class-validator";
+
 
 
 const postSignupUser = async (req, res) => {
@@ -12,16 +11,8 @@ const postSignupUser = async (req, res) => {
     }
 };
 
-
-
 const postSigninUser = async (req, res) => {
-    const { email, password } = req.body;
-    const loginData = new loginDto(email, password);
-    const errors = await validate(loginData);
-
-    if (errors.length > 0) {
-        return res.status(400).send(errors);
-    }
+    
 
     try {
         const { user, token } = await userService.signinService(req.body);
@@ -47,10 +38,47 @@ const verifiedService = async (req, res) => {
         return res.status(400).send(error.message);
     }
 };
+
+const forgotPassword_sendOTP = async(req, res) =>{
+    try{
+        await userService.forgotPassword_sendOTPService(req.body);
+        return res.status(200).json({ message: "OTP is sent successfully!" });
+        //await userService.forgotPassword_sendOTPService(req.body);
+        // return res.status(200).send("Found user successfully and OTP is sent!");
+    } catch (error){
+        return res.status(400).json({ error: error.message });
+    }
+};
+
+const verifyOTPForgotPassword = async(req, res) => {
+    try {
+        await userService.verifyOTPForgotPasswordService(req.body);
+        return res.status(200).json({message: "OTP is verified successfully!"});
+    } catch (error) {
+        return res.status(400).json({error: error.message});
+    }
+}
+
+const changePassword = async(req, res) => {
+    try {
+        await userService.changePasswordService(req.body);
+        return res.status(200).json({message: "Password is changed successfully!"});
+    } catch (error) {
+        return res.status(400).json({error: error.message});
+    }
+}
+
+
+
+
 export default {
     postSignupUser,
     postSendOTP,
     verifiedService,
-    postSigninUser
+    postSigninUser,
+
+    forgotPassword_sendOTP,
+    verifyOTPForgotPassword,
+    changePassword
 };
 

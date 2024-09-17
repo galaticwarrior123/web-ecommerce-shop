@@ -10,9 +10,7 @@ const userSchema = new mongoose.Schema({
     isActive: { type: Boolean, default: true },
     address: { type: String },
     otp: { type: String },
-    otpExpires: {type: Date},
-    is_verified: { type: Boolean, default: false },
-
+    otpExpires: { type: Date },
 });
 
 const User = mongoose.model("users", userSchema);
