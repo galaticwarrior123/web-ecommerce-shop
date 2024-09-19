@@ -4,7 +4,6 @@ import jwt from 'jsonwebtoken';
 const JWT_SECRET = process.env.JWT_SECRET || 'your_jwt_secret';
 import crypto from 'crypto';
 import transporter from '../config/email.transporter.js';
-// const JWT_SECRET = process.env.JWT_SECRET || 'your_jwt_secret';
 
 const signupService = async (data) => {
     try {
@@ -22,6 +21,29 @@ const signupService = async (data) => {
         throw e;
     }
 };
+
+const signinService = async (data) => {
+    try {
+        const { email, password } = data;
+        let user = await User.findOne({
+            email,
+        });
+        if (!user) {
+            throw new Error("User not found");
+        }
+        const isMatch = await bcrypt.compare(password, user.password);
+        if (!isMatch) {
+            throw new Error("Invalid password");
+        }
+        const token = jwt.sign({ id: user._id }, JWT_SECRET, { expiresIn: 3600 });
+        return { user, token };
+
+    }
+    catch (e) {
+        throw e;
+    }
+}
+
 
 const sendOTPService = async (data) => {
     try {
@@ -66,28 +88,6 @@ const verifiedService = async (data) => {
         throw new Error(error.message);
     }
 };
-
-const signinService = async (data) => {
-    try {
-        const { email, password } = data;
-        let user = await User.findOne({
-            email,
-        });
-        if (!user) {
-            throw new Error("User not found");
-        }
-        const isMatch = await bcrypt.compare(password, user.password);
-        if (!isMatch) {
-            throw new Error("Invalid password");
-        }
-        const token = jwt.sign({ id: user._id }, JWT_SECRET, { expiresIn: 3600 });
-        return { user, token };
-
-    }
-    catch (e) {
-        throw e;
-    }
-}
 
 //XỬ LÝ QUÊN MẬT KHẨU 
 //Hàm quên mật khẩu và gửi OTP

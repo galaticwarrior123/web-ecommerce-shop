@@ -6,7 +6,7 @@ const swaggerDefinition = {
   info: {
     title: 'Node.js Express API with Swagger', // Tên API
     version: '1.0.0', // Phiên bản API
-    description: 'A sample API documentation using Swagger for Node.js and Express',
+    description: 'A sample API documentation using Swagger for Node.js and Express Web-Ecommerce', // Mô tả API',
     contact: {
       name: 'Developer',
       email: 'developer@example.com',
