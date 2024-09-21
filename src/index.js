@@ -15,7 +15,7 @@ app.use("/api/v1/user", userRoute);
 
 swaggerDocs(app);
 
-const PORT = process.env.PORT || 3000;
+const PORT = process.env.PORT ;
 
 (async () => {
   try {
