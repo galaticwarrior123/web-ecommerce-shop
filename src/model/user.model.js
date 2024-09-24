@@ -11,6 +11,7 @@ const userSchema = new mongoose.Schema({
     address: { type: String },
     otp: { type: String },
     otpExpires: { type: Date },
+    
 });
 
 const User = mongoose.model("users", userSchema);
