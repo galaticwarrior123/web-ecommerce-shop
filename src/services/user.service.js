@@ -91,18 +91,58 @@ const verifiedService = async (data) => {
 
 //XỬ LÝ QUÊN MẬT KHẨU 
 //Hàm quên mật khẩu và gửi OTP
+// const forgotPassword_sendOTPService = async (data) => {
+//     try {
+//         //Bước 1: Tìm kiếm user
+//         const { email } = data;
+//         //console.log("Received email: ", email);
+//         const user = await User.findOne({
+//             email
+//         });
+//         if (!user) {
+//             throw new Error("User not found");
+//         }
+//         //console.log("User found: ", user);
+
+//         //Bước 2.1: Tạo OTP và lưu vào database với thời gian hết hạn
+//         const otp = crypto.randomInt(100000, 1000000).toString();
+//         user.otp = otp;
+//         user.otpExpires = Date.now() + 10 * 60 * 1000;
+//         await user.save();
+
+//         //Bước 2.2: Gửi OTP qua email
+//         const mailOptions = {
+//             from: "nguyenducphu200321@gmail.com",
+//             to: user.email,
+//             subject: `Your OTP for Password Reset`,
+//             text: `Your OTP for password reset is: ${otp}. It will expire in 10 minutes. `,
+//         };
+//         try {
+//             await transporter.sendMail(mailOptions);
+//         } catch (err) {
+//             throw new Error(err.message);
+//         }
+
+//         return { message: "OTP sent successfully!" };
+
+//     } catch (error) {
+//         throw new Error(error.message);
+//     }
+// }
+
 const forgotPassword_sendOTPService = async (data) => {
     try {
         //Bước 1: Tìm kiếm user
         const { email } = data;
         //console.log("Received email: ", email);
-        const user = await User.findOne({
-            email
-        });
+        const user = await User.findOne({ email });
+
         if (!user) {
             throw new Error("User not found");
         }
-        //console.log("User found: ", user);
+        
+        // Tạo JWT chứa email
+        const token = jwt.sign({ email }, JWT_SECRET, { expiresIn: '15m' });
 
         //Bước 2.1: Tạo OTP và lưu vào database với thời gian hết hạn
         const otp = crypto.randomInt(100000, 1000000).toString();
@@ -123,7 +163,7 @@ const forgotPassword_sendOTPService = async (data) => {
             throw new Error(err.message);
         }
 
-        return { message: "OTP sent successfully!" };
+        return { message: "OTP sent successfully to your email!", token };
 
     } catch (error) {
         throw new Error(error.message);
@@ -131,11 +171,14 @@ const forgotPassword_sendOTPService = async (data) => {
 }
 
 //Hàm xác nhận OTP của Forgot Password
-const verifyOTPForgotPasswordService = async (data) => {
-    //Bước 3: Xác nhận OTP của Forgot Password
+const verifyOTPForgotPasswordService = async(otp, token) => {
     try {
-        const { email, otp } = data;
-        const user = await User.findOne({ email });
+        //Xác thực token
+        const decoded = jwt.verify(token, JWT_SECRET);
+        const email = decoded.email;
+
+        const user =  await User.findOne({ email });
+
         if (!user) {
             throw new Error("User not found");
         }
@@ -143,31 +186,66 @@ const verifyOTPForgotPasswordService = async (data) => {
             throw new Error("OTP is incorrect");
         }
         if (user.otpExpires < Date.now()) {
-            return res.status(400).send('OTP is expired');
+            throw new Error("OTP is expired");
         }
+
+        // Xác thực thành công
         user.isVerified = true;
-        user.otp = otp;
+        //user.otp = null; // Bước này thì ko xóa OTP nha, qua tới change password mới set otp thành null
         await user.save();
+
+        return { message: "OTP verified successfully!" };
 
     } catch (error) {
         throw new Error(error.message);
     }
-}
+} 
+
+// const verifyOTPForgotPasswordService = async (data) => {
+//     //Bước 3: Xác nhận OTP của Forgot Password
+//     try {
+//         const { email, otp } = data;
+//         const user = await User.findOne({ email });
+//         if (!user) {
+//             throw new Error("User not found");
+//         }
+//         if (user.otp !== otp) {
+//             throw new Error("OTP is incorrect");
+//         }
+//         if (user.otpExpires < Date.now()) {
+//             return res.status(400).send('OTP is expired');
+//         }
+//         user.isVerified = true;
+//         user.otp = otp;
+//         await user.save();
+
+//     } catch (error) {
+//         throw new Error(error.message);
+//     }
+// }
 
 //Hàm đổi mật khẩu
-const changePasswordService = async (data) => {
+const changePasswordService = async (data, token) => {
     try {
         //Bước 4: Đổi mật khẩu
-        const { email, otp, newPassword } = data;
-        const user = await User.findOne({ email, otp });
-        if (!user) {
-            throw new Error("User not found");
+        const { newPassword, confirmPassword } = data;
+
+        if(newPassword !== confirmPassword) {
+            throw new Error ("New password and confirm password do not match");
         }
-        if (user.otp !== otp) {
-            throw new Error("OTP is incorrect");
+
+        //Xác thực token
+        const decoded = jwt.verify(token, JWT_SECRET);
+        const email = decoded.email;
+
+        const user = await User.findOne({ email });
+        
+        if(!user){
+            throw new Error ("User not found");
         }
-        if (user.otpExpires < Date.now()) {
-            return res.status(400).send('OTP is expired');
+ 
+        if(user.otpExpires < Date.now()){
+            throw new Error ("OTP is expired");
         }
 
         user.password = await bcrypt.hash(newPassword, 10);
@@ -175,14 +253,38 @@ const changePasswordService = async (data) => {
         user.otpExpires = null;
         await user.save();
 
-        // res.send('Password reset successful');
+        return { message: 'Password is reset successfully'};
+
     } catch (error) {
         throw new Error(error.message);
     }
-
-
-
 }
+
+// const changePasswordService = async (data) => {
+//     try {
+//         //Bước 4: Đổi mật khẩu
+//         const { email, otp, newPassword } = data;
+//         const user = await User.findOne({ email, otp });
+//         if (!user) {
+//             throw new Error("User not found");
+//         }
+//         if (user.otp !== otp) {
+//             throw new Error("OTP is incorrect");
+//         }
+//         if (user.otpExpires < Date.now()) {
+//             return res.status(400).send('OTP is expired');
+//         }
+
+//         user.password = await bcrypt.hash(newPassword, 10);
+//         user.otp = null;
+//         user.otpExpires = null;
+//         await user.save();
+
+//         // res.send('Password reset successful');
+//     } catch (error) {
+//         throw new Error(error.message);
+//     }
+// }
 
 
 export default {
