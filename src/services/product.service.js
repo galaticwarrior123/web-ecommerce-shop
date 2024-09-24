@@ -1,4 +1,5 @@
-import Product from '../model/product.model';
+//import { getStorage, ref, uploadBytes, getDownloadURL } from "firebase/storage";
+import ProductModel1 from "../model/products.model";
 
 const getProductService = async (filter = {}) => {
     try {
@@ -43,6 +44,35 @@ const getProductService = async (filter = {}) => {
     }
 };
 
+const createProductService = async (product) => {
+    try {
+        
+    } catch (error) {
+        throw new Error(error.message);
+    }
+}
+
+
+
+const uploadImage = async (file) => {
+    if (!file) return;
+
+    const storageRef = ref(storage, `images/${file.name}`);
+
+    try {
+        // Upload the file to Firebase Storage
+        const snapshot = await uploadBytes(storageRef, file);
+
+        // Get the file's download URL
+        const downloadURL = await getDownloadURL(snapshot.ref);
+        console.log('Uploaded a file! Available at:', downloadURL);
+
+        return downloadURL;
+    } catch (error) {
+        console.error("Upload failed:", error);
+    }
+};
 export default {
     getProductService,
+    createProductService
 };

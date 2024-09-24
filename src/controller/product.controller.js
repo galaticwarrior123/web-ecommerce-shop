@@ -1,4 +1,5 @@
-import productService from "../services/product.service";
+import { get } from "mongoose";
+import productService from "../services/product.service.js";
 
 const getProduct = async (req, res) => {
     try {
@@ -20,3 +21,20 @@ const getProduct = async (req, res) => {
         });
     }
 }
+
+
+const createProduct = async (req, res) => {
+    try {
+        const response = await productService.createProductService(req.body);
+        return res.status(200).json(response);
+    } catch (error) {
+        return res.status(400).json({ error: error.message });
+    }
+}
+
+export default {
+    getProduct,
+    createProduct
+}
+
+
