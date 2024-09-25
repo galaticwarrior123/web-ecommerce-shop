@@ -1,12 +1,12 @@
-import productService from "../services/product.service";
+import productService from "../services/product.service.js";
 
 const getProduct = async (req, res) => {
     try {
-        const { search, category, sortOrder, page } = req.query;
+        const { name, category, sort, page } = req.query;
         let rs = await productService.getProductService({
-            search,
+            name,
             category,
-            sortOrder,
+            sort,
             page,
         });
         return res.status(200).json({
@@ -20,3 +20,7 @@ const getProduct = async (req, res) => {
         });
     }
 }
+
+export default {
+    getProduct,
+};
