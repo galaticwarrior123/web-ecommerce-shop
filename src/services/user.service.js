@@ -7,14 +7,17 @@ import transporter from '../config/email.transporter.js';
 
 const signupService = async (data) => {
     try {
-        const { email, password } = data;
+        const { email, password, username, gender, phone, address } = data;
         const salt = await bcrypt.genSalt(10);
         const hashedPassword = await bcrypt.hash(password, salt);
 
         let res = await User.create({
             email,
             password: hashedPassword,
-
+            username,
+            gender,
+            phone,
+            address,
         });
         return res;
     } catch (e) {
@@ -140,7 +143,7 @@ const forgotPassword_sendOTPService = async (data) => {
         if (!user) {
             throw new Error("User not found");
         }
-        
+
         // Tạo JWT chứa email
         const token = jwt.sign({ email }, JWT_SECRET, { expiresIn: '15m' });
 
@@ -171,13 +174,13 @@ const forgotPassword_sendOTPService = async (data) => {
 }
 
 //Hàm xác nhận OTP của Forgot Password
-const verifyOTPForgotPasswordService = async(otp, token) => {
+const verifyOTPForgotPasswordService = async (otp, token) => {
     try {
         //Xác thực token
         const decoded = jwt.verify(token, JWT_SECRET);
         const email = decoded.email;
 
-        const user =  await User.findOne({ email });
+        const user = await User.findOne({ email });
 
         if (!user) {
             throw new Error("User not found");
@@ -199,7 +202,7 @@ const verifyOTPForgotPasswordService = async(otp, token) => {
     } catch (error) {
         throw new Error(error.message);
     }
-} 
+}
 
 // const verifyOTPForgotPasswordService = async (data) => {
 //     //Bước 3: Xác nhận OTP của Forgot Password
@@ -230,8 +233,8 @@ const changePasswordService = async (data, token) => {
         //Bước 4: Đổi mật khẩu
         const { newPassword, confirmPassword } = data;
 
-        if(newPassword !== confirmPassword) {
-            throw new Error ("New password and confirm password do not match");
+        if (newPassword !== confirmPassword) {
+            throw new Error("New password and confirm password do not match");
         }
 
         //Xác thực token
@@ -239,13 +242,13 @@ const changePasswordService = async (data, token) => {
         const email = decoded.email;
 
         const user = await User.findOne({ email });
-        
-        if(!user){
-            throw new Error ("User not found");
+
+        if (!user) {
+            throw new Error("User not found");
         }
- 
-        if(user.otpExpires < Date.now()){
-            throw new Error ("OTP is expired");
+
+        if (user.otpExpires < Date.now()) {
+            throw new Error("OTP is expired");
         }
 
         user.password = await bcrypt.hash(newPassword, 10);
@@ -253,7 +256,7 @@ const changePasswordService = async (data, token) => {
         user.otpExpires = null;
         await user.save();
 
-        return { message: 'Password is reset successfully'};
+        return { message: 'Password is reset successfully' };
 
     } catch (error) {
         throw new Error(error.message);
