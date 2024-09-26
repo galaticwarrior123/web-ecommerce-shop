@@ -2,7 +2,10 @@ import express from "express";
 import dotenv from "dotenv";
 import cors from "cors";
 import connection from "./config/db/dbconnection.js";
+
 import userRoute from "./routers/user.router.js";
+import productRoute from "./routers/product.router.js";
+
 import { swaggerDocs } from "./config/swagger/swagger.js";
 dotenv.config();
 
@@ -12,7 +15,7 @@ app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
 app.use("/api/v1/user", userRoute);
-
+app.use("/api/v1/product", productRoute);
 swaggerDocs(app);
 
 const PORT = process.env.PORT || 4000;
