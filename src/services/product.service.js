@@ -1,5 +1,8 @@
-//import { getStorage, ref, uploadBytes, getDownloadURL } from "firebase/storage";
-import ProductModel1 from "../model/products.model";
+import { getStorage, ref, uploadBytes, getDownloadURL } from "firebase/storage";
+import { getDatabase, ref as dbRef, set } from "firebase/database";
+
+import ProductModel from "../model/product.model.js";
+import { database, storage } from "../config/firebase.js";
 
 const getProductService = async (filter = {}) => {
     try {
@@ -27,10 +30,10 @@ const getProductService = async (filter = {}) => {
             sort.price = -1;
         }
 
-        const totalItems = await Product.countDocuments(query);
+        const totalItems = await ProductModel.countDocuments(query);
         const totalPages = Math.ceil(totalItems / limit);
 
-        const products = await Product.find(query)
+        const products = await ProductModel.find(query)
             .limit(limit)
             .skip(skip)
             .sort(sort);
@@ -46,7 +49,16 @@ const getProductService = async (filter = {}) => {
 
 const createProductService = async (product) => {
     try {
-        
+        const newProduct = new ProductModel(product);
+        const listImage = [];
+        for (let i = 0; i < product.images.length; i++) {
+            const image = await uploadImage(product.images[i]);
+            listImage.push(image);
+        }
+
+        newProduct.images = listImage;
+        await newProduct.save();
+        return { message: "Create product successfully" };
     } catch (error) {
         throw new Error(error.message);
     }
@@ -54,24 +66,33 @@ const createProductService = async (product) => {
 
 
 
-const uploadImage = async (file) => {
-    if (!file) return;
-
-    const storageRef = ref(storage, `images/${file.name}`);
-
+async function uploadImage(file) {
     try {
-        // Upload the file to Firebase Storage
-        const snapshot = await uploadBytes(storageRef, file);
+        // Tạo một reference cho ảnh trong Firebase Storage
+        const storageRef = ref(storage, 'images/' + file.name);
+        console.log('Uploading file:', file.name);
+        // Tải ảnh lên Storage
+        await uploadBytes(storageRef, file);
+        console.log('File uploaded successfully!');
 
-        // Get the file's download URL
-        const downloadURL = await getDownloadURL(snapshot.ref);
-        console.log('Uploaded a file! Available at:', downloadURL);
+        // Lấy URL của ảnh sau khi tải lên
+        const downloadURL = await getDownloadURL(storageRef);
+        console.log('Download URL:', downloadURL);
 
-        return downloadURL;
+        // Lưu URL của ảnh vào Firebase Realtime Database
+        const imageId = Date.now(); // Tạo một ID duy nhất cho ảnh
+        await set(dbRef(database, 'images/' + imageId), {
+            url: downloadURL,
+            name: file.name,
+            uploadedAt: new Date().toISOString()
+        });
+
+        console.log('Image URL saved to Realtime Database');
     } catch (error) {
-        console.error("Upload failed:", error);
+        console.error('Error uploading file:', error);
     }
-};
+}
+
 export default {
     getProductService,
     createProductService
