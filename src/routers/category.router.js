@@ -1,9 +1,7 @@
-import categoryController from "../controller/category.controller";
-
-
+import express from 'express';
+import CategoryController from '../controller/category.controller.js';
 
 const routerAPI = express.Router();
-routerAPI.get("/", categoryController.getAllCategory);
-routerAPI.post("/", categoryController.createCategory);
-routerAPI.put("/{categoryId}", categoryController.updateCategory);
-routerAPI.delete("/{categoryId}", categoryController.deleteCategory);
+routerAPI.get('/', CategoryController.getCategory);
+
+export default routerAPI;
