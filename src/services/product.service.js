@@ -31,7 +31,8 @@ const getProductService = async (filter = {}) => {
         const products = await ProductModel.find(query)
             .limit(limit)
             .skip(skip)
-            .sort(sort);
+            .sort(sort)
+            .populate("category", "name");
         return {
             products,
             totalPages,
