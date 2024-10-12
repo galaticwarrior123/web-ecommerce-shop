@@ -21,6 +21,45 @@ const getProduct = async (req, res) => {
     }
 }
 
+const getAllProducts = async (req, res) => {
+    try {
+        const allProducts = await productService.getAllProducts();
+        res.json({ DT: { products: allProducts.data } });
+    } catch (error) {
+        console.error("Lỗi khi lấy tất cả sản phẩm:", error);
+        res.status(500).json({ success: false, message: error.message });
+    }
+};
+
+const getTop10BestSellingProducts = async (req, res) => {
+    try {
+        // Chỉ lấy danh sách sản phẩm bán chạy nhất
+        const topSellingProducts = await productService.getTop10BestSellingProducts();
+
+        // Gói kết quả vào đối tượng DT
+        res.json({ DT: { products: topSellingProducts.data } });
+    } catch (error) {
+        console.error("Lỗi khi lấy sản phẩm bán chạy nhất:", error);
+        res.status(500).json({ success: false, message: error.message });
+    }
+};
+
+const getTop10BestViewProducts = async (req, res) => {
+    try {
+        // Chỉ lấy danh sách sản phẩm bán chạy nhất
+        const topViewingProducts = await productService.getTop10BestViewProducts();
+
+        // Gói kết quả vào đối tượng DT
+        res.json({ DT: { products: topViewingProducts.data } });
+    } catch (error) {
+        console.error("Lỗi khi lấy sản phẩm xem nhiều nhất:", error);
+        res.status(500).json({ success: false, message: error.message });
+    }
+};
+
 export default {
     getProduct,
+    getTop10BestSellingProducts,
+    getTop10BestViewProducts,
+    getAllProducts
 };
