@@ -11,8 +11,8 @@ const postSignupUser = async (req, res) => {
     }
 };
 
-const postSigninUser = async (req, res) => {    
-    
+const postSigninUser = async (req, res) => {
+
 
     try {
         const { user, token } = await userService.signinService(req.body);
@@ -40,7 +40,7 @@ const verifiedService = async (req, res) => {
 };
 
 
-const forgotPassword_sendOTP = async(req, res) =>{
+const forgotPassword_sendOTP = async (req, res) => {
     try {
         const response = await userService.forgotPassword_sendOTPService(req.body);
         return res.status(200).json(response); // Gửi phản hồi bao gồm cả token
@@ -49,7 +49,7 @@ const forgotPassword_sendOTP = async(req, res) =>{
     }
 };
 
-const verifyOTPForgotPassword = async(req, res) => {
+const verifyOTPForgotPassword = async (req, res) => {
     try {
         const { otp, token } = req.body;
         if (!otp || !token) {
@@ -69,7 +69,7 @@ const verifyOTPForgotPassword = async(req, res) => {
     // }
 }
 
-const changePassword = async(req, res) => {
+const changePassword = async (req, res) => {
     try {
         // Lấy token từ headers
         const token = req.headers['x-token'];
@@ -104,7 +104,6 @@ export default {
     postSendOTP,
     verifiedService,
     postSigninUser,
-
     forgotPassword_sendOTP,
     verifyOTPForgotPassword,
     changePassword

@@ -7,6 +7,9 @@ import userRoute from "./routers/user.router.js";
 import productRoute from "./routers/product.router.js";
 import categoryRoute from "./routers/category.router.js";
 import paymentRoute from "./routers/payment.router.js";
+import orderRoute from "./routers/order.router.js";
+
+
 import { swaggerDocs } from "./config/swagger/swagger.js";
 dotenv.config();
 
@@ -19,6 +22,7 @@ app.use("/api/v1/user", userRoute);
 app.use("/api/v1/product", productRoute);
 app.use("/api/v1/category", categoryRoute);
 app.use("/api/v1/payment", paymentRoute);
+app.use("/api/v1/order", orderRoute);
 
 swaggerDocs(app);
 
