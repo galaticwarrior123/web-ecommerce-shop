@@ -20,7 +20,22 @@ const getProduct = async (req, res) => {
         });
     }
 }
-
+const createProduct = async (req, res) => {
+    try {
+        const product = req.body;
+        const newProduct = await productService.createProductService(product, req, res);
+        return res.status(200).json({
+            DT: newProduct,
+            EM: "Create product successfully",
+        });
+    } catch (error) {
+        return res.status(400).json({
+            DT: null,
+            EM: error.message,
+        });
+    }
+}
 export default {
     getProduct,
+    createProduct,
 };
