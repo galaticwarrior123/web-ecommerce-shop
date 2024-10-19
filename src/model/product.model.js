@@ -7,13 +7,14 @@ const productchema = new mongoose.Schema({
     quantity: { type: Number, required: true },
     images_1: { type: [String], default: [] },
     images_2: { type: [String], default: [] },
-    origin_price: { type: Number, required: true },
-    sale_price: { type: Number, required: true },
-    sold_count:{ type: Number, required: true }, //SL lượt bán
-    view_count:{ type: Number, required: true }, //SL lượt xem
-    badge: { type: String, required: true }
+    origin_price: { type: Number },
+    sale_price: { type: Number ,default: 0},
+    sold_count:{ type: Number,default:0 }, //SL lượt bán
+    view_count:{ type: Number, default:0}, //SL lượt xem
+    badge: { type: String, default: "new" }, //new, hot, sale
+    images: { type: [String], default: [] },
 });
 
-const Product = mongoose.model("Product", productchema);
+const ProductModel = mongoose.model("Product", productchema);
 
-export default Product;
+export default ProductModel;

@@ -5,6 +5,6 @@ const categorySchema = new mongoose.Schema({
     logo: { type: String },
 });
 
-const Category = mongoose.model("Category", categorySchema);
+const CategoryModel = mongoose.model("Category", categorySchema);
 
-export default Category;
+export default CategoryModel;

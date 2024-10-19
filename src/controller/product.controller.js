@@ -56,10 +56,25 @@ const getTop10BestViewProducts = async (req, res) => {
         res.status(500).json({ success: false, message: error.message });
     }
 };
-
+const createProduct = async (req, res) => {
+    try {
+        const product = req.body;
+        const newProduct = await productService.createProductService(product, req, res);
+        return res.status(200).json({
+            DT: newProduct,
+            EM: "Create product successfully",
+        });
+    } catch (error) {
+        return res.status(400).json({
+            DT: null,
+            EM: error.message,
+        });
+    }
+}
 export default {
     getProduct,
     getTop10BestSellingProducts,
     getTop10BestViewProducts,
-    getAllProducts
+    getAllProducts,
+    createProduct,
 };

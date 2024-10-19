@@ -8,10 +8,10 @@ const authMiddleware = (req, res, next) => {
   if (!token) {
     return res.status(401).json({ message: 'No token, authorization denied' });
   }
-
+  const tokenAuth = token.split(' ')[1];
   try {
-    const decoded = jwt.verify(token, JWT_SECRET);
-    req.user = decoded; // Gán thông tin người dùng vào request
+    const decoded = jwt.verify(tokenAuth, JWT_SECRET);
+    req.user = decoded.user;
     next();
   } catch (error) {
     res.status(401).json({ message: 'Token is not valid' });
