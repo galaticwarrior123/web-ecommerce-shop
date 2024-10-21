@@ -4,7 +4,7 @@ import paymentService from "../services/payment.service.js";
 
 const createPayment = async (req, res) => {
     try {
-        const requestBody = await paymentService.createPaymentService ();
+        const requestBody = await paymentService.createPaymentService();
         const option = {
             method: "POST",
             url: "https://test-payment.momo.vn/v2/gateway/api/create",
