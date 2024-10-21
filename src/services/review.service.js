@@ -1,4 +1,4 @@
-import Review from "../models/review.model";
+import Review from "../model/review.model.js";
 
 const getReviewByProductService = async (productId) => {
   try {
@@ -18,4 +18,4 @@ const createReviewService = async (review) => {
   }
 };
 
-module.exports = { createReviewService, getReviewByProductService };
+export default { getReviewByProductService, createReviewService };

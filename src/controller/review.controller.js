@@ -16,7 +16,7 @@ const getReviewByProduct = async (req, res) => {
 const postCreateReview = async (req, res) => {
   try {
     const review = req.body;
-    review.user = req.user.userId;
+    review.user = req.userId;
     const rs = await reviewService.createReviewService(review);
     res.status(200).json({
       DT: rs,
@@ -27,4 +27,4 @@ const postCreateReview = async (req, res) => {
   }
 };
 
-module.exports = { postCreateReview, getReviewByProduct };
+export default { getReviewByProduct, postCreateReview };

@@ -1,14 +1,9 @@
 import express from "express";
-const {
-  postCreateReview,
-  getReviewByProduct,
-} = require("../controller/review.controller");
-const { auth } = require("../middleware/auth");
-const { createReviewValidator } = require("../validator/review.validator");
-
+import reviewController from "../controller/review.controller.js";
+import authMiddleware from "../middleware/auth.middleware.js";
 const routerAPI = express.Router();
 
-routerAPI.get("/product/:productId", getReviewByProduct);
-routerAPI.post("/", auth, createReviewValidator, postCreateReview);
+routerAPI.get("/product/:productId", reviewController.getReviewByProduct);
+routerAPI.post("/", authMiddleware, reviewController.postCreateReview);
 
 export default routerAPI;

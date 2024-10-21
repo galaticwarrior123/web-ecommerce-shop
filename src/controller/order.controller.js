@@ -38,7 +38,7 @@ const postCreateOrder = async (req, res) => {
 const putCancelOrder = async (req, res) => {
   try {
     const { orderId } = req.params;
-    const userId = req.user.userId;
+    const userId = req.userId;
     let rs = await orderService.cancelOrderService(orderId, userId);
     return res.status(200).json({
       DT: rs,
@@ -71,7 +71,7 @@ const putChangeOrderStatus = async (req, res) => {
 
 const getOrderByUser = async (req, res) => {
   try {
-    const userId = req.user.userId;
+    const userId = req.userId;
     let rs = await orderService.getOrderByUserService(userId);
     return res.status(200).json({
       DT: rs,
@@ -103,7 +103,7 @@ const getOrderById = async (req, res) => {
 
 const getProductUserPurchased = async (req, res) => {
   try {
-    const userId = req.user.userId;
+    const userId = req.userId;
     let rs = await orderService.getProductUserPurchasedService(userId);
     return res.status(200).json({
       DT: rs,
