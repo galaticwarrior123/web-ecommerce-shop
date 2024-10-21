@@ -12,6 +12,39 @@ const getShoppingCartControllerByUser = async (req, res) => {
     }
 };
 
+const addProductToCartController = async (req, res) => {
+    try {
+        const userId = req.user._id; // Ensure the user is authenticated and has `_id`
+        const { productId, quantity } = req.body;
+
+        // Call the service function
+        const response = await shoppingCartService.addProductToCart(userId, productId, quantity);
+        console.log('Add to shopping cart response:', response);    
+
+        if (response.success) {
+            return res.status(200).json(response);
+        } else {
+            return res.status(400).json(response);
+        }
+    } catch (error) {
+        console.error("Error adding product to cart:", error);
+        return res.status(500).json({ message: error.message });
+    }
+};
+
+const updateProductQuantity = async (req, res) => {
+    const { productId, quantity } = req.body;
+    const { shoppingCartId } = req.params;
+
+    try {
+        const shoppingCart = await shoppingCartService.updateProductQuantity(shoppingCartId, productId, quantity);
+        return res.status(200).json({ success: true, message: "Quantity updated successfully", shoppingcart: shoppingCart });
+    } catch (error) {
+        console.error("Error updating product quantity:", error);
+        return res.status(500).json({ success: false, message: error.message });
+    }
+};
+
 // const getShoppingCartController = async (req, res) => {
 //     try {
 //         const userId = "66f8e454f36fd9092033e20c"; // Sử dụng ID cụ thể để kiểm tra
@@ -34,5 +67,7 @@ const getShoppingCartControllerByUser = async (req, res) => {
 
 
 export default {
-    getShoppingCartControllerByUser
+    getShoppingCartControllerByUser,
+    addProductToCartController,
+    updateProductQuantity
 }
