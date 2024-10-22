@@ -8,4 +8,5 @@ routerAPI.get("/", ProductController.getProduct);
 routerAPI.get("/top-10-best-selling", ProductController.getTop10BestSellingProducts);
 routerAPI.get("/top-10-best-viewing", ProductController.getTop10BestViewProducts);
 routerAPI.post("/", authMiddleware, upload.array("images", 10), ProductController.createProduct);
+routerAPI.get("/:id", ProductController.getProductById);
 export default routerAPI;

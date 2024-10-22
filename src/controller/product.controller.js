@@ -71,10 +71,28 @@ const createProduct = async (req, res) => {
         });
     }
 }
+
+const getProductById = async (req, res) => {
+    const { id } = req.params; // Lấy ID từ request params
+
+    try {
+        const product = await productService.findProductById(id);
+
+        if (!product) {
+            return res.status(404).json({ message: 'Sản phẩm không tìm thấy' });
+        }
+        return res.status(200).json(product);
+    } catch (error) {
+        console.error('Lỗi khi lấy sản phẩm:', error);
+        return res.status(500).json({ message: 'Lỗi server' });
+    }
+};
+
 export default {
     getProduct,
     getTop10BestSellingProducts,
     getTop10BestViewProducts,
     getAllProducts,
     createProduct,
+    getProductById
 };
