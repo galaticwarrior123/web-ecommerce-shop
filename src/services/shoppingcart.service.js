@@ -109,11 +109,55 @@ const updateProductQuantity = async (shoppingCartId, productId, quantity) => {
     shoppingCart.products[productIndex].quantity = quantity;
     await shoppingCart.save();
     return shoppingCart;
-
-
 }
+
+//Xóa sản phẩm khỏi giỏ hàng
+const removeProductFromCart = async (userId, productId) => {
+    try {
+        if (!mongoose.isValidObjectId(userId) || !mongoose.isValidObjectId(productId)) {
+            throw new Error("Invalid userId or productId");
+        }
+
+        const shoppingCart = await ShoppingCart.findOne({ user: userId });
+        if (!shoppingCart) {
+            throw new Error("Shopping cart not found");
+        }
+
+        // Tìm index của sản phẩm cần xóa
+        const productIndex = shoppingCart.products.findIndex(
+            (p) => p.product.toString() === productId
+        );
+
+        if (productIndex < 0) {
+            throw new Error("Product not found in cart");
+        }
+
+        // Xóa sản phẩm khỏi mảng products
+        shoppingCart.products.splice(productIndex, 1);
+
+        // Cập nhật tổng tiền giỏ hàng
+        shoppingCart.totalAmount = calculateTotalAmount(shoppingCart.products);
+
+        // Lưu lại giỏ hàng
+        await shoppingCart.save();
+
+        return {
+            success: true,
+            message: "Product removed from cart successfully",
+            shoppingCart,
+        };
+    } catch (error) {
+        console.error("Error removing product from shopping cart:", error);
+        return {
+            success: false,
+            message: error.message || "Internal server error",
+        };
+    }
+};
+
 export default {
     getShoppingCart,
     addProductToCart,
-    updateProductQuantity
+    updateProductQuantity,
+    removeProductFromCart
 }

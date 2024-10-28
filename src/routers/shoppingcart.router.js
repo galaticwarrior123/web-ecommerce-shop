@@ -7,5 +7,5 @@ const routerAPI = express.Router();
 routerAPI.get("/", authMiddleware, shoppingcartController.getShoppingCartControllerByUser);
 routerAPI.post("/add", authMiddleware, shoppingcartController.addProductToCartController);
 routerAPI.put("/:shoppingCartId/update", shoppingcartController.updateProductQuantity);
-
+routerAPI.delete("/:shoppingCartId/remove/:productId", authMiddleware, shoppingcartController.deleteProductFromCartController);
 export default routerAPI;
