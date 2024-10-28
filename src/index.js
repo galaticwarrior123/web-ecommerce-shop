@@ -9,6 +9,7 @@ import categoryRoute from "./routers/category.router.js";
 import paymentRoute from "./routers/payment.router.js";
 import orderRoute from "./routers/order.router.js";
 import notificationRoute from "./routers/notification.router.js";
+import shoppingCartRoute from "./routers/shoppingcart.router.js"
 import reviewRoute from "./routers/review.router.js";
 
 import { swaggerDocs } from "./config/swagger/swagger.js";
@@ -25,7 +26,9 @@ app.use("/api/v1/category", categoryRoute);
 app.use("/api/v1/payment", paymentRoute);
 app.use("/api/v1/order", orderRoute);
 app.use("/api/v1/notification", notificationRoute);
+app.use("/api/v1/shopping-cart", shoppingCartRoute);
 app.use("/api/v1/review", reviewRoute);
+
 
 swaggerDocs(app);
 
