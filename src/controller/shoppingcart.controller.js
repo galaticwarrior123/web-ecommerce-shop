@@ -2,9 +2,14 @@ import shoppingCartService from "../services/shoppingcart.service.js";
 
 const getShoppingCartControllerByUser = async (req, res) => {
     try {
-        const userId = req.user._id; // Đảm bảo bạn có thuộc tính `_id` trong `req.user`
+        //const userId = req.user._id; // Đảm bảo có thuộc tính `_id` trong `req.user`
+        const userId = req.userId;
+        if (!userId) {
+            return res.status(400).json({ message: "User ID not found in request" });
+        }
+        console.log("USERID: ", userId);
         const cart = await shoppingCartService.getShoppingCart(userId);
-        console.log('Cart Response:', cart);    
+        console.log('Cart Response:', cart);
         res.status(200).json(cart);
     } catch (error) {
         console.error('Error getting shopping cart:', error);
@@ -14,12 +19,15 @@ const getShoppingCartControllerByUser = async (req, res) => {
 
 const addProductToCartController = async (req, res) => {
     try {
-        const userId = req.user._id; // Ensure the user is authenticated and has `_id`
+        const userId = req.userId;
+        if (!userId) {
+            return res.status(400).json({ message: "User ID not found in request" });
+        }
         const { productId, quantity } = req.body;
 
         // Call the service function
         const response = await shoppingCartService.addProductToCart(userId, productId, quantity);
-        console.log('Add to shopping cart response:', response);    
+        console.log('Add to shopping cart response:', response);
 
         if (response.success) {
             return res.status(200).json(response);
