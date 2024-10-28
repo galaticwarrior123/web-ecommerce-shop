@@ -1,6 +1,7 @@
 // const Discount = require("../model/discount.model");
 import Order from "../model/order.model.js";
 import Product from "../model/product.model.js";
+import Review from "../model/review.model.js";
 // const { addNotificationJob } = require("../queues/notification.queue");
 // const { applyDiscountService } = require("./discount.service");
 import mongoose from "mongoose";
@@ -129,8 +130,15 @@ const changeOrderStatusService = async (orderId, status) => {
 const getOrderByUserService = async (userId) => {
   try {
     let orders = await Order.find({ user: userId })
-      .populate("products.product")
-      .populate("discountCode");
+      .populate({
+        path: 'products.product',
+        populate: {
+          path: 'category',
+          model: 'Category',
+          select: 'name',
+        },
+      });
+    // .populate("discountCode");
     return orders;
   } catch (error) {
     throw new Error(error.message);
@@ -141,7 +149,7 @@ const getOrderByIdService = async (orderId) => {
   try {
     let order = await Order.findById(orderId)
       .populate("products.product")
-      .populate("discountCode");
+    // .populate("discountCode");
     return order;
   } catch (error) {
     throw new Error(error.message);
@@ -155,17 +163,25 @@ const getProductUserPurchasedService = async (userId) => {
       status: "DELIVERED",
     }).populate("products.product");
 
+    // Lấy tất cả review theo sản phẩm mà user đã mua
+    const reviewedProductIds = new Set(
+      (await Review.find({ user: userId })).map((review) => review.product.toString())
+    );
+
     const productSet = new Set();
     const products = [];
 
-    orders.forEach((order) => {
-      order.products.forEach((item) => {
-        if (!productSet.has(item.product._id.toString())) {
-          productSet.add(item.product._id.toString());
+    for (const order of orders) {
+      for (const item of order.products) {
+        const productId = item.product._id.toString();
+        // Chỉ thêm sản phẩm nếu nó chưa có trong danh sách review
+        if (!reviewedProductIds.has(productId) && !productSet.has(productId)) {
+          productSet.add(productId);
           products.push(item.product);
         }
-      });
-    });
+      }
+    }
+
     return products;
   } catch (error) {
     throw new Error(error.message);
