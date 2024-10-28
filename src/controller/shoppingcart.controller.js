@@ -53,6 +53,34 @@ const updateProductQuantity = async (req, res) => {
     }
 };
 
+const deleteProductFromCartController = async (req, res) => {
+    try {
+        const { userId, productId } = req.params;
+
+        // Gọi service để xóa sản phẩm khỏi giỏ hàng
+        const result = await ShoppingCartService.deleteProductFromCart(userId, productId);
+
+        if (!result.success) {
+            return res.status(404).json({
+                success: false,
+                message: result.message,
+            });
+        }
+
+        return res.status(200).json({
+            success: true,
+            message: result.message,
+            shoppingCart: result.shoppingCart,
+        });
+    } catch (error) {
+        console.error("Error in deleteProductFromCartController:", error);
+        return res.status(500).json({
+            success: false,
+            message: "Internal server error",
+        });
+    }
+};
+
 // const getShoppingCartController = async (req, res) => {
 //     try {
 //         const userId = "66f8e454f36fd9092033e20c"; // Sử dụng ID cụ thể để kiểm tra
@@ -77,5 +105,6 @@ const updateProductQuantity = async (req, res) => {
 export default {
     getShoppingCartControllerByUser,
     addProductToCartController,
-    updateProductQuantity
+    updateProductQuantity,
+    deleteProductFromCartController
 }
