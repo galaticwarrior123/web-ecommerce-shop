@@ -55,10 +55,9 @@ const updateProductQuantity = async (req, res) => {
 
 const deleteProductFromCartController = async (req, res) => {
     try {
-        const { userId, productId } = req.params;
+        const { shoppingCartId, productId } = req.params;
 
-        // Gọi service để xóa sản phẩm khỏi giỏ hàng
-        const result = await ShoppingCartService.deleteProductFromCart(userId, productId);
+        const result = await shoppingCartService.removeProductFromCart(shoppingCartId, productId);
 
         if (!result.success) {
             return res.status(404).json({

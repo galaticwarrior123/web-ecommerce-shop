@@ -112,13 +112,13 @@ const updateProductQuantity = async (shoppingCartId, productId, quantity) => {
 }
 
 //Xóa sản phẩm khỏi giỏ hàng
-const removeProductFromCart = async (userId, productId) => {
+const removeProductFromCart = async (shoppingCartId, productId) => {
     try {
-        if (!mongoose.isValidObjectId(userId) || !mongoose.isValidObjectId(productId)) {
-            throw new Error("Invalid userId or productId");
+        if (!mongoose.isValidObjectId(shoppingCartId)) {
+            throw new Error("Invalid shoppingCartId or productId");
         }
 
-        const shoppingCart = await ShoppingCart.findOne({ user: userId });
+        const shoppingCart = await ShoppingCart.findById(shoppingCartId);
         if (!shoppingCart) {
             throw new Error("Shopping cart not found");
         }
