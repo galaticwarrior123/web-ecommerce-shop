@@ -13,6 +13,7 @@ const userSchema = new mongoose.Schema({
     isActive: { type: Boolean, default: true },
     otp: { type: String },
     otpExpires: { type: Date },
+    loyalty: { type: mongoose.Schema.Types.ObjectId, ref: "Loyalty" },
 
 });
 

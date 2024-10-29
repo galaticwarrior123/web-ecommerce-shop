@@ -152,8 +152,8 @@ async function uploadImage(file) {
 
 const findProductById = async (id) => {
     try {
-        const product = await ProductModel.findById(id).populate("category", "name");
-        return product;
+        const product = await ProductModel.findById(id).populate('category', 'name');
+        return { success: true, DT: product };
     } catch (error) {
         throw new Error('Lỗi khi tìm sản phẩm');
     }
