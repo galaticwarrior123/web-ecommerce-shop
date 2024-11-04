@@ -1,8 +1,9 @@
 import { getDownloadURL, ref as storageRef, uploadBytes } from "firebase/storage";
-import { database, storage} from "../config/firebase.js";
+import { database, storage } from "../config/firebase.js";
 import { ref as databaseRef } from "firebase/database";
 import CategoryModel from '../model/category.model.js';
 import { child, getDatabase, push } from "firebase/database";
+import ProductModel from "../model/product.model.js";
 
 const getCategoryService = async () => {
     try {
@@ -35,8 +36,13 @@ async function uploadImage(file) {
         const storageReference = storageRef(storage, `images/${file.originalname}`);
         console.log('Uploading file:', file.originalname);
 
+
+        const metadata = {
+            contentType: file.mimetype
+        };
+
         // Tải ảnh lên Storage
-        await uploadBytes(storageReference, file);
+        await uploadBytes(storageReference, file.buffer, metadata);
         console.log('File uploaded successfully!');
 
         // Lấy URL của ảnh sau khi tải lên
@@ -55,7 +61,50 @@ async function uploadImage(file) {
     }
 }
 
-export default { 
-    getCategoryService, 
-    createCategoryService 
+async function updateCategoryService(id, category, req, res) {
+    try {
+        const updatedCategory = await CategoryModel.findById(id);
+        if (!updatedCategory) {
+            throw new Error('Không tìm thấy danh mục');
+        }
+
+        if (req.file) {
+            const image = await uploadImage(req.file);
+            console.log('image: ', image);
+            updatedCategory.logo = image;
+        }
+        updatedCategory.name = category.name;
+        await updatedCategory.save();
+        return updatedCategory;
+    }
+
+    catch (error) {
+        throw new Error('Lỗi khi cập nhật danh mục');
+    }
+
+}
+
+async function deleteCategoryService(id) {
+    try {
+        // xóa hết sản phẩm trong danh mục đó 
+        // xóa danh mục
+
+        const listProduct = await ProductModel.find({ category: id }).exec();
+        if (listProduct.length > 0) {
+            for (const product of listProduct) {
+                await ProductModel.findByIdAndDelete(product._id);
+            }
+        }
+        await CategoryModel.findByIdAndDelete(id);
+        return { message: 'Xóa danh mục thành công' };
+    } catch (error) {
+        throw error;
+    }
+}
+
+export default {
+    getCategoryService,
+    createCategoryService,
+    updateCategoryService,
+    deleteCategoryService
 };

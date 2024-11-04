@@ -1,6 +1,6 @@
 import { getDownloadURL, ref as storageRef, uploadBytes } from "firebase/storage";
 import { database, storage } from "../config/firebase.js";
-import { ref as databaseRef, child, push } from "firebase/database";
+import { ref as databaseRef, child, push, update } from "firebase/database";
 import ProductModel from "../model/product.model.js";
 
 // Hàm lấy sản phẩm với bộ lọc
@@ -119,6 +119,36 @@ const createProductService = async (product, req, res) => {
     }
 };
 
+const updateProductService = async (id, product, req, res) => {
+    try {
+        const updatedProduct = await ProductModel.findById(id);
+        if (!updatedProduct) {
+            throw new Error('Không tìm thấy sản phẩm');
+        }
+        
+        if (req.files) {
+            for (let i = 0; i < req.files.length; i++) {
+                const image = await uploadImage(req.files[i]); // Upload ảnh
+                updatedProduct.images.push(image); // Thêm URL ảnh vào sản phẩm
+            }
+        }
+        updatedProduct.productName = product.productName;
+        updatedProduct.price = product.price;
+        updatedProduct.description = product.description;
+        updatedProduct.category = product.category;
+        updatedProduct.quantity = product.quantity;
+        updatedProduct.sold_count = product.sold_count;
+        updatedProduct.view_count = product.view_count;
+        updatedProduct.badge = product.badge;
+        await updatedProduct.save();
+        return updatedProduct;
+    }
+    catch (error) {
+        throw new Error('Lỗi khi cập nhật sản phẩm');
+    }
+};
+
+
 // Hàm upload ảnh lên Firebase Storage và lưu URL vào Firebase Realtime Database
 async function uploadImage(file) {
     try {
@@ -159,6 +189,16 @@ const findProductById = async (id) => {
     }
 };
 
+const deleteProductService = async (id) => {
+    try {
+        await ProductModel.findByIdAndDelete(id);
+        return { success: true, message: 'Xóa sản phẩm thành công' };
+    }
+    catch (error) {
+        throw new Error('Lỗi khi xóa sản phẩm');
+    }
+}
+
 export default {
     getProductService,
     getTop10BestSellingProducts,
@@ -166,5 +206,7 @@ export default {
     updateProductBadges,
     getAllProducts,
     createProductService,
-    findProductById
+    findProductById,
+    deleteProductService,
+    updateProductService
 };
