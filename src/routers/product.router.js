@@ -8,6 +8,7 @@ routerAPI.get("/all", ProductController.getAllProducts);
 routerAPI.get("/top-10-best-selling", ProductController.getTop10BestSellingProducts);
 routerAPI.get("/top-10-best-viewing", ProductController.getTop10BestViewProducts);
 routerAPI.post("/", authMiddleware, upload.array("images", 10), ProductController.createProduct);
+routerAPI.get("/productWithoutPromotion", ProductController.findProductsWithoutPromotion);
 routerAPI.get("/:id", ProductController.getProductById);
 routerAPI.put("/:id", authMiddleware, upload.array("images", 10), ProductController.updateProduct);
 routerAPI.delete("/:id", authMiddleware, ProductController.deleteProduct);

@@ -103,7 +103,20 @@ const getProductById = async (req, res) => {
     }
 };
 
-
+const findProductsWithoutPromotion = async (req, res) => {
+    try {
+        const products = await productService.findProductsWithoutPromotion();
+        return res.status(200).json({
+            DT: products,
+            EM: "Get products successfully",
+        });
+    } catch (error) {
+        return res.status(400).json({
+            DT: null,
+            EM: error.message,
+        });
+    }
+}
 const deleteProduct = async (req, res) => {
     const { id } = req.params; // Lấy ID từ request params
 
@@ -128,5 +141,7 @@ export default {
     createProduct,
     getProductById,
     deleteProduct,
-    updateProduct
+    updateProduct,
+    findProductsWithoutPromotion,
+    
 };

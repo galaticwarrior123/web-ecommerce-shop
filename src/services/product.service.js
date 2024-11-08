@@ -2,7 +2,7 @@ import { getDownloadURL, ref as storageRef, uploadBytes } from "firebase/storage
 import { database, storage } from "../config/firebase.js";
 import { ref as databaseRef, child, push, update } from "firebase/database";
 import ProductModel from "../model/product.model.js";
-
+import PromotionModel from "../model/promotion.model.js";
 // Hàm lấy sản phẩm với bộ lọc
 const getProductService = async (filter = {}) => {
     try {
@@ -148,6 +148,20 @@ const updateProductService = async (id, product, req, res) => {
     }
 };
 
+const findProductsWithoutPromotion = async () => {
+    try {
+        const products = await ProductModel.find();
+        const promotionProducts = await PromotionModel.find();
+        const productIds = promotionProducts.map(promotionProduct => promotionProduct.product.toString());
+        const productsWithoutPromotion = products.filter(product => !productIds.includes(product._id.toString()));
+        return { success: true, data: productsWithoutPromotion };
+       
+    } catch (error) {
+        throw new Error('Lỗi server: ' + error.message);
+    }
+};
+
+
 
 // Hàm upload ảnh lên Firebase Storage và lưu URL vào Firebase Realtime Database
 async function uploadImage(file) {
@@ -191,7 +205,9 @@ const findProductById = async (id) => {
 
 const deleteProductService = async (id) => {
     try {
+        await PromotionModel.findOneAndDelete({ product: id }); // Xóa khuyến mãi liên quan
         await ProductModel.findByIdAndDelete(id);
+        
         return { success: true, message: 'Xóa sản phẩm thành công' };
     }
     catch (error) {
@@ -208,5 +224,6 @@ export default {
     createProductService,
     findProductById,
     deleteProductService,
-    updateProductService
+    updateProductService,
+    findProductsWithoutPromotion
 };
