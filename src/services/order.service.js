@@ -149,7 +149,7 @@ const getOrderByIdService = async (orderId) => {
   try {
     let order = await Order.findById(orderId)
       .populate("products.product")
-    // .populate("discountCode");
+      .populate("products.category");
     return order;
   } catch (error) {
     throw new Error(error.message);
@@ -201,7 +201,7 @@ const getOrderByAdminService = async (filter = {}) => {
 
     let orders = await Order.find()
       .populate("products.product")
-      .populate("discountCode")
+      .populate("products.product.category", "name")
       .limit(limit)
       .skip(skip)
       .sort({ createdAt: -1 });
