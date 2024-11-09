@@ -53,6 +53,7 @@ const createOrderService = async (data) => {
     // Cập nhật isActived của shoppingCart và tạo một shoppingCart mới
     cartItems.isActive = false;
     await cartItems.save();
+
     const newCart = new ShoppingCart({
       user: userId,
       products: [],
@@ -192,8 +193,17 @@ const changeOrderStatusService = async (orderId, status) => {
 
 const getOrderByUserService = async (userId) => {
   try {
-    let orders = await Order.find({ user: userId }).populate("shoppingCart").populate("user");
-    // .populate("discountCode");
+    let orders = await Order.find({ user: userId })
+      .populate({
+        path: "shoppingCart",
+        populate: {
+          path: "products.product",
+          populate: {
+            path: "category"
+          }
+        }
+      })
+      .populate("user");
     return orders;
   } catch (error) {
     throw new Error(error.message);
