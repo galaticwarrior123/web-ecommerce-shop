@@ -12,7 +12,7 @@ const getShoppingCart = async (userId) => {
             throw new Error("Invalid userId");
         }
 
-        const shoppingcart = await ShoppingCart.findOne({ user: userId })
+        const shoppingcart = await ShoppingCart.findOne({ user: userId, isActive: true, isPaid: false })
             .populate({
                 path: "products.product",
                 populate: { path: "category" } // Populate category
@@ -59,7 +59,7 @@ const addProductToCart = async (userId, productId, quantity) => {
             throw new Error("Product not found");
         }
 
-        let shoppingcart = await ShoppingCart.findOne({ user: userId });
+        let shoppingcart = await ShoppingCart.findOne({ user: userId, isActive: true, isPaid: false });
         if (!shoppingcart) {
             shoppingcart = new ShoppingCart({ user: userId, products: [], totalAmount: 0 });
         }

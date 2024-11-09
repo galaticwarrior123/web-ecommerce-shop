@@ -18,6 +18,8 @@ const shoppingCartSchema = new mongoose.Schema({
         },
     ],
     totalAmount: { type: Number, required: true },
+    isPaid: { type: Boolean, default: false },
+    isActive: { type: Boolean, default: true },
     //createdAt: { type: Date, default: Date.now },
 });
 

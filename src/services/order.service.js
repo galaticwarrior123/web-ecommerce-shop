@@ -50,6 +50,19 @@ const createOrderService = async (data) => {
     });
     await order.save();
 
+    // Cập nhật isActived của shoppingCart và tạo một shoppingCart mới
+    cartItems.isActive = false;
+    await cartItems.save();
+    const newCart = new ShoppingCart({
+      user: userId,
+      products: [],
+      totalAmount: 0,
+      isPaid: false,
+      isActive: true,
+    });
+
+    await newCart.save();
+
     return { success: true, order };
 
   } catch (error) {
