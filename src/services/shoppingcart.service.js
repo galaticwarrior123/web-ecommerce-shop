@@ -114,7 +114,7 @@ const updateProductQuantity = async (shoppingCartId, productId, quantity) => {
 //Xóa sản phẩm khỏi giỏ hàng
 const removeProductFromCart = async (shoppingCartId, productId) => {
     try {
-        if (!mongoose.isValidObjectId(shoppingCartId)) {
+        if (!mongoose.isValidObjectId(shoppingCartId) || !mongoose.isValidObjectId(productId)) {
             throw new Error("Invalid shoppingCartId or productId");
         }
 
