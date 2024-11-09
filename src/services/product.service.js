@@ -213,6 +213,17 @@ const deleteProductService = async (id) => {
     catch (error) {
         throw new Error('Lỗi khi xóa sản phẩm');
     }
+
+}
+
+const getSimilarProducts = async (productId) => {
+    try {
+        const product = await ProductModel.findById(productId);
+        const products = await ProductModel.find({ category: product.category, _id: { $ne: productId } });
+        return { success: true, data: products };
+    } catch (error) {
+        throw new Error('Lỗi server: ' + error.message);
+    }
 }
 
 export default {
@@ -225,5 +236,6 @@ export default {
     findProductById,
     deleteProductService,
     updateProductService,
-    findProductsWithoutPromotion
+    findProductsWithoutPromotion,
+    getSimilarProducts
 };

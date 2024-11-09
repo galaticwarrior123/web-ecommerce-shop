@@ -103,6 +103,22 @@ const getProductById = async (req, res) => {
     }
 };
 
+const getSimilarProducts = async (req, res) => {
+    const { id } = req.params; // Lấy ID từ request params
+
+    try {
+        const products = await productService.getSimilarProducts(id);
+
+        if (!products) {
+            return res.status(404).json({ message: 'Sản phẩm không tìm thấy' });
+        }
+        return res.status(200).json(products);
+    } catch (error) {
+        console.error('Lỗi khi lấy sản phẩm tương tự:', error);
+        return res.status(500).json({ message: 'Lỗi server' });
+    }
+};
+
 const findProductsWithoutPromotion = async (req, res) => {
     try {
         const products = await productService.findProductsWithoutPromotion();
@@ -143,5 +159,6 @@ export default {
     deleteProduct,
     updateProduct,
     findProductsWithoutPromotion,
+    getSimilarProducts
     
 };

@@ -12,4 +12,5 @@ routerAPI.get("/productWithoutPromotion", ProductController.findProductsWithoutP
 routerAPI.get("/:id", ProductController.getProductById);
 routerAPI.put("/:id", authMiddleware, upload.array("images", 10), ProductController.updateProduct);
 routerAPI.delete("/:id", authMiddleware, ProductController.deleteProduct);
+routerAPI.get("/similar/:id", ProductController.getSimilarProducts);
 export default routerAPI;
