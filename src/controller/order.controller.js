@@ -2,26 +2,9 @@ import orderService from "../services/order.service.js";
 
 const postCreateOrder = async (req, res) => {
   try {
-    const {
-      products,
-      totalAmount,
-      paymentMethod,
-      name,
-      phone,
-      address,
-      discountCode,
-    } = req.body;
-    const userId = req.user.userId;
-    let data = {
-      userId,
-      products,
-      totalAmount,
-      paymentMethod,
-      name,
-      phone,
-      address,
-      discountCode,
-    };
+    const data = req.body;
+    const userId = req.userId;
+    data.userId = userId;
     let rs = await orderService.createOrderService(data);
     return res.status(200).json({
       DT: rs,

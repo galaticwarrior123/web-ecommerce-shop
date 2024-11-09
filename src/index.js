@@ -11,7 +11,7 @@ import orderRoute from "./routers/order.router.js";
 import notificationRoute from "./routers/notification.router.js";
 import shoppingCartRoute from "./routers/shoppingcart.router.js"
 import reviewRoute from "./routers/review.router.js";
-
+import promotionRoute from "./routers/promotion.router.js";
 import { swaggerDocs } from "./config/swagger/swagger.js";
 dotenv.config();
 
@@ -28,6 +28,7 @@ app.use("/api/v1/order", orderRoute);
 app.use("/api/v1/notification", notificationRoute);
 app.use("/api/v1/shopping-cart", shoppingCartRoute);
 app.use("/api/v1/review", reviewRoute);
+app.use("/api/v1/promotion", promotionRoute);
 
 
 swaggerDocs(app);

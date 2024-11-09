@@ -4,71 +4,135 @@ import Product from "../model/product.model.js";
 import Review from "../model/review.model.js";
 // const { addNotificationJob } = require("../queues/notification.queue");
 // const { applyDiscountService } = require("./discount.service");
-import mongoose from "mongoose";
+import mongoose, { Types } from "mongoose";
+import ShoppingCart from "../model/shoppingcart.model.js";
+import ProductModel from "../model/product.model.js";
 
 const createOrderService = async (data) => {
-  const session = await mongoose.startSession(); // Khởi tạo session
-  session.startTransaction();
+  
+
 
   try {
     const {
       userId,
-      products,
+      shoppingCart,
       totalAmount,
       paymentMethod,
       name,
       phone,
       address,
-      discountCode,
     } = data;
 
-    // Kiểm tra và cập nhật số lượng sản phẩm
-    for (const item of products) {
-      const product = await Product.findById(item.productId).session(session);
-
-      if (!product || product.quantity < item.quantity) {
-        throw new Error(
-          `Sản phẩm ${product.productName} không đủ số lượng để đặt hàng, số lượng sản phẩm hiện có: ${product.quantity}`
-        );
+    const cartItems = await ShoppingCart.findById(shoppingCart).populate("products.product");
+    
+    for (const item of cartItems.products) {
+      
+      const product = await ProductModel.findById(item.product._id);
+      
+      if (!product) {
+        throw new Error("Product not found");
+        
       }
-
-      product.quantity -= item.quantity;
-      await product.save({ session });
+      if (product.quantity < item.quantity) {
+        throw new Error("Not enough product in stock");
+      }
     }
 
-    // // Áp dụng mã giảm giá nếu có
-    // if (discountCode) {
-    //   await applyDiscountService(discountCode, userId);
-    // }
+    // Tạo order
+    const order = new Order({
+      user: userId,
+      shoppingCart: shoppingCart,
+      totalAmount,
+      paymentMethod,
+      name,
+      phone,
+      address,
+    });
+    await order.save();
 
-    // Tạo đơn hàng trong session
-    const order = await Order.create(
-      [
-        {
-          user: userId,
-          products: products.map((item) => ({
-            product: item.productId,
-            quantity: item.quantity,
-          })),
-          totalAmount,
-          paymentMethod,
-          discountCode,
-          name,
-          phone,
-          address,
-        },
-      ],
-      { session }
-    );
+    // Cập nhật isActived của shoppingCart và tạo một shoppingCart mới
+    cartItems.isActive = false;
+    await cartItems.save();
 
-    await session.commitTransaction();
-    return order[0];
+    const newCart = new ShoppingCart({
+      user: userId,
+      products: [],
+      totalAmount: 0,
+      isPaid: false,
+      isActive: true,
+    });
+
+    await newCart.save();
+
+    return { success: true, order };
+
   } catch (error) {
-    await session.abortTransaction();
     throw new Error(error.message);
-  } finally {
-    session.endSession();
-  }
+  } 
+
+
+  // const session = await mongoose.startSession(); // Khởi tạo session
+  // session.startTransaction();
+
+  // try {
+  //   const {
+  //     userId,
+  //     products,
+  //     totalAmount,
+  //     paymentMethod,
+  //     name,
+  //     phone,
+  //     address,
+  //     discountCode,
+  //   } = data;
+
+  //   // Kiểm tra và cập nhật số lượng sản phẩm
+  //   for (const item of products) {
+  //     const product = await Product.findById(item.productId).session(session);
+
+  //     if (!product || product.quantity < item.quantity) {
+  //       throw new Error(
+  //         `Sản phẩm ${product.productName} không đủ số lượng để đặt hàng, số lượng sản phẩm hiện có: ${product.quantity}`
+  //       );
+  //     }
+
+  //     product.quantity -= item.quantity;
+  //     await product.save({ session });
+  //   }
+
+  //   // // Áp dụng mã giảm giá nếu có
+  //   // if (discountCode) {
+  //   //   await applyDiscountService(discountCode, userId);
+  //   // }
+
+  //   // Tạo đơn hàng trong session
+  //   const order = await Order.create(
+  //     [
+  //       {
+  //         user: userId,
+  //         products: products.map((item) => ({
+  //           product: item.productId,
+  //           quantity: item.quantity,
+  //         })),
+  //         totalAmount,
+  //         paymentMethod,
+  //         discountCode,
+  //         name,
+  //         phone,
+  //         address,
+  //       },
+  //     ],
+  //     { session }
+  //   );
+
+  //   await session.commitTransaction();
+  //   return order[0];
+  // } catch (error) {
+  //   await session.abortTransaction();
+  //   throw new Error(error.message);
+  // } finally {
+  //   session.endSession();
+  // }
 };
 
 const cancelOrderService = async (orderId, userId) => {
@@ -131,14 +195,15 @@ const getOrderByUserService = async (userId) => {
   try {
     let orders = await Order.find({ user: userId })
       .populate({
-        path: 'products.product',
+        path: "shoppingCart",
         populate: {
-          path: 'category',
-          model: 'Category',
-          select: 'name',
-        },
-      });
-    // .populate("discountCode");
+          path: "products.product",
+          populate: {
+            path: "category"
+          }
+        }
+      })
+      .populate("user");
     return orders;
   } catch (error) {
     throw new Error(error.message);
@@ -149,7 +214,7 @@ const getOrderByIdService = async (orderId) => {
   try {
     let order = await Order.findById(orderId)
       .populate("products.product")
-    // .populate("discountCode");
+      .populate("products.category");
     return order;
   } catch (error) {
     throw new Error(error.message);
@@ -201,7 +266,7 @@ const getOrderByAdminService = async (filter = {}) => {
 
     let orders = await Order.find()
       .populate("products.product")
-      .populate("discountCode")
+      .populate("products.product.category", "name")
       .limit(limit)
       .skip(skip)
       .sort({ createdAt: -1 });

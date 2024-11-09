@@ -71,7 +71,22 @@ const createProduct = async (req, res) => {
         });
     }
 }
-
+const updateProduct = async (req, res) => {
+    try {
+        const product = req.body;
+        const { id } = req.params;
+        const newProduct = await productService.updateProductService(id, product, req, res);
+        return res.status(200).json({
+            DT: newProduct,
+            EM: "Update product successfully",
+        });
+    } catch (error) {
+        return res.status(400).json({
+            DT: null,
+            EM: error.message,
+        });
+    }
+}
 const getProductById = async (req, res) => {
     const { id } = req.params; // Lấy ID từ request params
 
@@ -88,11 +103,45 @@ const getProductById = async (req, res) => {
     }
 };
 
+const findProductsWithoutPromotion = async (req, res) => {
+    try {
+        const products = await productService.findProductsWithoutPromotion();
+        return res.status(200).json({
+            DT: products,
+            EM: "Get products successfully",
+        });
+    } catch (error) {
+        return res.status(400).json({
+            DT: null,
+            EM: error.message,
+        });
+    }
+}
+const deleteProduct = async (req, res) => {
+    const { id } = req.params; // Lấy ID từ request params
+
+    try {
+        const product = await productService.deleteProductService(id);
+
+        if (!product) {
+            return res.status(404).json({ message: 'Sản phẩm không tìm thấy' });
+        }
+        return res.status(200).json({ message: 'Xóa sản phẩm thành công' });
+    } catch (error) {
+        console.error('Lỗi khi xóa sản phẩm:', error);
+        return res.status(500).json({ message: 'Lỗi server' });
+    }
+};
+
 export default {
     getProduct,
     getTop10BestSellingProducts,
     getTop10BestViewProducts,
     getAllProducts,
     createProduct,
-    getProductById
+    getProductById,
+    deleteProduct,
+    updateProduct,
+    findProductsWithoutPromotion,
+    
 };
