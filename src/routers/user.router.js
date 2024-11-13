@@ -1,6 +1,8 @@
 import express from "express";
 import UserController from "../controller/user.controller.js"; // Đảm bảo có .js
 import User from "../model/user.model.js";
+import authMiddleware from "../middleware/auth.middleware.js";
+import upload from "../middleware/multer.middleware.js";
 
 const routerAPI = express.Router();
 routerAPI.post("/signup", UserController.postSignupUser);
@@ -13,5 +15,5 @@ routerAPI.post("/verify-otp_forgotpassword", UserController.verifyOTPForgotPassw
 routerAPI.post("/change-password", UserController.changePassword);
 
 routerAPI.get("/all", UserController.getAllUser);
-routerAPI.put("/:id", UserController.updateUser);
+routerAPI.put("/update/:id", authMiddleware, upload.single("avatar"), UserController.updateUser);
 export default routerAPI;

@@ -5,6 +5,9 @@ const JWT_SECRET = process.env.JWT_SECRET || 'your_jwt_secret';
 import crypto from 'crypto';
 import transporter from '../config/email.transporter.js';
 import { get } from 'http';
+import { getDownloadURL, ref as storageRef, uploadBytes } from "firebase/storage";
+import { database, storage } from "../config/firebase.js";
+import { ref as databaseRef, child, push, update } from "firebase/database";
 
 const signupService = async (data) => {
     try {
@@ -308,21 +311,56 @@ const getAllUsersService = async () => {
     }
 };
 
-const updateUser = async (id, data) => {
+const updateUserService = async (id, data, req, res) => {
     try {
         const user = await User.findById(id);
         if (!user) {
             throw new Error("User not found");
         }
-        Object.keys(data).forEach((key) => {
+        if (req.file) {
+            const image = await uploadImage(req.file);
+            user.avatar = image;
+        }
+        for (let key in data) {
             user[key] = data[key];
-        });
+        }
         await user.save();
         return user;
     } catch (e) {
         throw e;
     }
 };
+
+
+async function uploadImage(file) {
+    try {
+        // Tạo một reference cho ảnh trong Firebase Storage
+        const storageReference = storageRef(storage, `images/${file.originalname}`);
+        console.log('Uploading file:', file.originalname);
+
+        const metadata = {
+            contentType: file.mimetype
+        };
+
+        // Tải ảnh lên Firebase Storage (truyền `file.buffer` thay vì `file`)
+        await uploadBytes(storageReference, file.buffer, metadata);
+        console.log('File uploaded successfully!');
+
+        // Lấy URL của ảnh sau khi upload thành công
+        const downloadURL = await getDownloadURL(storageReference);
+        console.log('Download URL:', downloadURL);
+
+        // Lưu URL của ảnh vào Firebase Realtime Database
+        const imageDatabaseRef = child(databaseRef(database), 'images');
+        await push(imageDatabaseRef, { url: downloadURL }); // Lưu URL dưới dạng object
+
+        console.log('Image URL saved to Realtime Database');
+        return downloadURL; // Trả về URL của ảnh
+    } catch (error) {
+        console.error('Error uploading file:', error);
+        throw new Error('Failed to upload image');
+    }
+}
 
 export default {
     signupService,
@@ -335,4 +373,5 @@ export default {
     changePasswordService,
 
     getAllUsersService,
+    updateUserService,
 };
