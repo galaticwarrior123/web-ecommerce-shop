@@ -37,6 +37,46 @@ const getWishlist = async (userId) => {
     }
 };
 
+const addToWishlist = async(userId, productId) => {
+    try {
+        if (!mongoose.isValidObjectId(userId) || !mongoose.isValidObjectId(productId)) {
+            throw new Error("Invalid userId or productId");
+        }
+
+        const product = await Product.findById(productId);
+        if (!product) {
+            throw new Error("Product not found");
+        }
+
+        let wishlist = await Wishlist.findOne({ user: userId });
+        if (!wishlist) {
+            wishlist = new Wishlist({ user: userId, products: [] });
+        }
+
+        const productIndex = wishlist.products.findIndex(p => p.product.toString() === productId)
+
+        if (productIndex >= 0) {
+            return res.status(200).json({ message: "Sản phẩm đã được yêu thích", exists: true });
+        } else {
+            wishlist.products.push({ product: productId });
+        }
+        await wishlist.save();
+
+        return {
+            success: true,
+            message: "Đã thêm sản phẩm vào wishlist",
+            wishlist,
+        };
+    } catch (error) {
+        console.error("Lỗi thêm sản phẩm vào danh sách yêu thích:", error);
+        return {
+            success: false,
+            message: error.message || "Internal server error",
+        };
+    }
+}
+
 export default {
-    getWishlist   
+    getWishlist,
+    addToWishlist  
 };
