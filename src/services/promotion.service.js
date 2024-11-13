@@ -14,6 +14,8 @@ const PromotionService = {
             const newPromotionProduct = new PromotionModel(promotionProduct);
             newPromotionProduct.product = id;
             await newPromotionProduct.save();
+            currentProduct.sale_price = currentProduct.origin_price - (currentProduct.origin_price * newPromotionProduct.discount / 100);
+            await currentProduct.save();
             return newPromotionProduct;
         } catch (error) {
             throw new Error('Lỗi khi tạo khuyến mãi');

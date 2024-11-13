@@ -97,6 +97,15 @@ const changePassword = async (req, res) => {
 }
 
 
+const getAllUser = async (req, res) => {
+    try {
+        const users = await userService.getAllUsersService();
+        return res.status(200).json(users);
+    } catch (error) {
+        return res.status(400).json({ error: error.message });
+    }
+}
+
 
 
 export default {
@@ -106,6 +115,8 @@ export default {
     postSigninUser,
     forgotPassword_sendOTP,
     verifyOTPForgotPassword,
-    changePassword
+    changePassword,
+
+    getAllUser
 };
 

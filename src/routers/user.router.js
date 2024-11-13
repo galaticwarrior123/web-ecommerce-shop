@@ -12,5 +12,5 @@ routerAPI.post("/forgot-password", UserController.forgotPassword_sendOTP);
 routerAPI.post("/verify-otp_forgotpassword", UserController.verifyOTPForgotPassword);
 routerAPI.post("/change-password", UserController.changePassword);
 
-
+routerAPI.get("/all", UserController.getAllUser);
 export default routerAPI;

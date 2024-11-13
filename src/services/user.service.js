@@ -4,6 +4,7 @@ import jwt from 'jsonwebtoken';
 const JWT_SECRET = process.env.JWT_SECRET || 'your_jwt_secret';
 import crypto from 'crypto';
 import transporter from '../config/email.transporter.js';
+import { get } from 'http';
 
 const signupService = async (data) => {
     try {
@@ -298,6 +299,14 @@ const changePasswordService = async (data, token) => {
 //     }
 // }
 
+const getAllUsersService = async () => {
+    try {
+        const users = await User.find();
+        return users;
+    } catch (e) {
+        throw e;
+    }
+};
 
 export default {
     signupService,
@@ -307,5 +316,7 @@ export default {
 
     forgotPassword_sendOTPService,
     verifyOTPForgotPasswordService,
-    changePasswordService
+    changePasswordService,
+
+    getAllUsersService,
 };
