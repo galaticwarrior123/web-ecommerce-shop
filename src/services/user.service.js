@@ -308,6 +308,22 @@ const getAllUsersService = async () => {
     }
 };
 
+const updateUser = async (id, data) => {
+    try {
+        const user = await User.findById(id);
+        if (!user) {
+            throw new Error("User not found");
+        }
+        Object.keys(data).forEach((key) => {
+            user[key] = data[key];
+        });
+        await user.save();
+        return user;
+    } catch (e) {
+        throw e;
+    }
+};
+
 export default {
     signupService,
     sendOTPService,
