@@ -56,7 +56,11 @@ const addToWishlist = async(userId, productId) => {
         const productIndex = wishlist.products.findIndex(p => p.product.toString() === productId)
 
         if (productIndex >= 0) {
-            return res.status(200).json({ message: "Sản phẩm đã được yêu thích", exists: true });
+            return {
+                success: true,
+                message: "Sản phẩm đã được yêu thích",
+                exists: true,
+            };
         } else {
             wishlist.products.push({ product: productId });
         }
@@ -64,7 +68,7 @@ const addToWishlist = async(userId, productId) => {
 
         return {
             success: true,
-            message: "Đã thêm sản phẩm vào wishlist",
+            message: "Thêm vào danh sách yêu thích thành công",
             wishlist,
         };
     } catch (error) {
@@ -76,7 +80,49 @@ const addToWishlist = async(userId, productId) => {
     }
 }
 
+//Xóa sản phẩm khỏi wishlist
+const removeProductFromWishlist = async (wishlistId, productId) => {
+    try {
+        if (!mongoose.isValidObjectId(wishlistId) || !mongoose.isValidObjectId(productId)) {
+            throw new Error("Invalid wishlistId or productId");
+        }
+
+        const wishlist = await Wishlist.findById(wishlistId);
+        if (!wishlist) {
+            throw new Error("Wishlist not found");
+        }
+
+        // Tìm index của sản phẩm cần xóa
+        const productIndex = wishlist.products.findIndex(
+            (p) => p.product.toString() === productId
+        );
+
+        if (productIndex < 0) {
+            throw new Error("Product not found in wishlist");
+        }
+
+        // Xóa sản phẩm khỏi mảng products
+        wishlist.products.splice(productIndex, 1);
+
+        // Lưu lại giỏ hàng
+        await wishlist.save();
+
+        return {
+            success: true,
+            message: "Product removed from wishlist successfully",
+            wishlist,
+        };
+    } catch (error) {
+        console.error("Error removing product from wishlist:", error);
+        return {
+            success: false,
+            message: error.message || "Internal server error",
+        };
+    }
+};
+
 export default {
     getWishlist,
-    addToWishlist  
+    addToWishlist,
+    removeProductFromWishlist
 };
