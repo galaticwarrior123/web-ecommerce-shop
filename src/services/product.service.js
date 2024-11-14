@@ -225,6 +225,17 @@ const getSimilarProducts = async (productId) => {
         throw new Error('Lỗi server: ' + error.message);
     }
 }
+const increaseViewCount = async (productId) => {
+    try {
+        const product = await ProductModel.findById(productId);
+        product.view_count++;
+        await product.updateOne({ view_count: product.view_count });
+        return { success: true, data: product };
+    }
+    catch (error) {
+        throw new Error('Lỗi server: ' + error.message);
+    }
+}
 
 export default {
     getProductService,
@@ -237,5 +248,6 @@ export default {
     deleteProductService,
     updateProductService,
     findProductsWithoutPromotion,
-    getSimilarProducts
+    getSimilarProducts,
+    increaseViewCount
 };

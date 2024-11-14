@@ -149,6 +149,18 @@ const deleteProduct = async (req, res) => {
     }
 };
 
+const increaseViewCount = async (req, res) => {
+    const { productId } = req.params;
+
+    try {
+        const result = await productService.increaseViewCount(productId);
+        return res.status(200).json(result);
+    } catch (error) {
+        console.error('Lỗi khi tăng lượt xem sản phẩm:', error);
+        return res.status(500).json({ message: 'Lỗi server' });
+    }
+};
+
 export default {
     getProduct,
     getTop10BestSellingProducts,
@@ -159,6 +171,6 @@ export default {
     deleteProduct,
     updateProduct,
     findProductsWithoutPromotion,
-    getSimilarProducts
-    
+    getSimilarProducts,
+    increaseViewCount
 };

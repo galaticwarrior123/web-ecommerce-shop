@@ -8,9 +8,10 @@ import mongoose, { Types } from "mongoose";
 import ShoppingCart from "../model/shoppingcart.model.js";
 import ProductModel from "../model/product.model.js";
 
-const createOrderService = async (data) => {
+const createOrderService = async (data) => { 
   
-
+  const session = await mongoose.startSession(); // Khởi tạo session
+  session.startTransaction();
 
   try {
     const {
@@ -23,20 +24,27 @@ const createOrderService = async (data) => {
       address,
     } = data;
 
-    const cartItems = await ShoppingCart.findById(shoppingCart).populate("products.product");
+
+    
+    const cartItems = await ShoppingCart.findById(shoppingCart).populate({ path: "products.product" }).session(session);
+
     
     for (const item of cartItems.products) {
-      
-      const product = await ProductModel.findById(item.product._id);
-      
+      const product = await ProductModel.findById(item.product._id).session(session);
       if (!product) {
         throw new Error("Product not found");
-        
       }
+
       if (product.quantity < item.quantity) {
         throw new Error("Not enough product in stock");
       }
+
+      // Cập nhật số lượng sản phẩm
+      await ProductModel.updateOne( { _id: item.product._id }, { $inc: { quantity: -item.quantity, sold_count: +item.quantity } }).session(session);
     }
+
+
+    
 
     // Tạo order
     const order = new Order({
@@ -48,12 +56,13 @@ const createOrderService = async (data) => {
       phone,
       address,
     });
-    await order.save();
+    await order.save({ session });
 
-    // Cập nhật isActived của shoppingCart và tạo một shoppingCart mới
+    // Cập nhật trạng thái giỏ hàng
     cartItems.isActive = false;
-    await cartItems.save();
+    await cartItems.save({ session });
 
+    // Tạo một shoppingCart mới
     const newCart = new ShoppingCart({
       user: userId,
       products: [],
@@ -61,79 +70,20 @@ const createOrderService = async (data) => {
       isPaid: false,
       isActive: true,
     });
+    await newCart.save({ session });
 
-    await newCart.save();
+    await session.commitTransaction(); // Xác nhận transaction
+    session.endSession();
 
     return { success: true, order };
 
   } catch (error) {
+    await session.abortTransaction(); // Hủy transaction nếu có lỗi
+    session.endSession();
     throw new Error(error.message);
-  } 
-
-
-  // const session = await mongoose.startSession(); // Khởi tạo session
-  // session.startTransaction();
-
-  // try {
-  //   const {
-  //     userId,
-  //     products,
-  //     totalAmount,
-  //     paymentMethod,
-  //     name,
-  //     phone,
-  //     address,
-  //     discountCode,
-  //   } = data;
-
-  //   // Kiểm tra và cập nhật số lượng sản phẩm
-  //   for (const item of products) {
-  //     const product = await Product.findById(item.productId).session(session);
-
-  //     if (!product || product.quantity < item.quantity) {
-  //       throw new Error(
-  //         `Sản phẩm ${product.productName} không đủ số lượng để đặt hàng, số lượng sản phẩm hiện có: ${product.quantity}`
-  //       );
-  //     }
-
-  //     product.quantity -= item.quantity;
-  //     await product.save({ session });
-  //   }
-
-  //   // // Áp dụng mã giảm giá nếu có
-  //   // if (discountCode) {
-  //   //   await applyDiscountService(discountCode, userId);
-  //   // }
-
-  //   // Tạo đơn hàng trong session
-  //   const order = await Order.create(
-  //     [
-  //       {
-  //         user: userId,
-  //         products: products.map((item) => ({
-  //           product: item.productId,
-  //           quantity: item.quantity,
-  //         })),
-  //         totalAmount,
-  //         paymentMethod,
-  //         discountCode,
-  //         name,
-  //         phone,
-  //         address,
-  //       },
-  //     ],
-  //     { session }
-  //   );
-
-  //   await session.commitTransaction();
-  //   return order[0];
-  // } catch (error) {
-  //   await session.abortTransaction();
-  //   throw new Error(error.message);
-  // } finally {
-  //   session.endSession();
-  // }
+  }
 };
+
 
 const cancelOrderService = async (orderId, userId) => {
   try {
