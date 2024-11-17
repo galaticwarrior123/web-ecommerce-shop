@@ -14,6 +14,8 @@ const productchema = new mongoose.Schema({
     badge: { type: String, default: "new" }, //new, hot, sale
     images: { type: [String], default: [] },
     isActive: { type: Boolean, default: true },
+    supplier: { type: String, required: true },
+    origin: { type: String, required: true },
     promotion: { type: mongoose.Schema.Types.ObjectId, ref: "Promotion" },
 });
 
