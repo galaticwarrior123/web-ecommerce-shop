@@ -7,9 +7,9 @@ const getShoppingCartControllerByUser = async (req, res) => {
         if (!userId) {
             return res.status(400).json({ message: "User ID not found in request" });
         }
-        console.log("USERID: ", userId);
+        // console.log("USERID: ", userId);
         const cart = await shoppingCartService.getShoppingCart(userId);
-        console.log('Cart Response:', cart);
+        // console.log('Cart Response:', cart);
         res.status(200).json(cart);
     } catch (error) {
         console.error('Error getting shopping cart:', error);
@@ -27,7 +27,7 @@ const addProductToCartController = async (req, res) => {
 
         // Call the service function
         const response = await shoppingCartService.addProductToCart(userId, productId, quantity);
-        console.log('Add to shopping cart response:', response);
+        // console.log('Add to shopping cart response:', response);
 
         if (response.success) {
             return res.status(200).json(response);

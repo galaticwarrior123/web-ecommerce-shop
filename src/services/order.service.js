@@ -8,8 +8,8 @@ import mongoose, { Types } from "mongoose";
 import ShoppingCart from "../model/shoppingcart.model.js";
 import ProductModel from "../model/product.model.js";
 
-const createOrderService = async (data) => { 
-  
+const createOrderService = async (data) => {
+
   const session = await mongoose.startSession(); // Khởi tạo session
   session.startTransaction();
 
@@ -25,10 +25,10 @@ const createOrderService = async (data) => {
     } = data;
 
 
-    
+
     const cartItems = await ShoppingCart.findById(shoppingCart).populate({ path: "products.product" }).session(session);
 
-    
+
     for (const item of cartItems.products) {
       const product = await ProductModel.findById(item.product._id).session(session);
       if (!product) {
@@ -40,11 +40,11 @@ const createOrderService = async (data) => {
       }
 
       // Cập nhật số lượng sản phẩm
-      await ProductModel.updateOne( { _id: item.product._id }, { $inc: { quantity: -item.quantity, sold_count: +item.quantity } }).session(session);
+      await ProductModel.updateOne({ _id: item.product._id }, { $inc: { quantity: -item.quantity, sold_count: +item.quantity } }).session(session);
     }
 
 
-    
+
 
     // Tạo order
     const order = new Order({
@@ -163,8 +163,16 @@ const getOrderByUserService = async (userId) => {
 const getOrderByIdService = async (orderId) => {
   try {
     let order = await Order.findById(orderId)
-      .populate("products.product")
-      .populate("products.category");
+      .populate({
+        path: "shoppingCart",
+        populate: {
+          path: "products.product",
+          populate: {
+            path: "category"
+          }
+        }
+      })
+      .populate("user");
     return order;
   } catch (error) {
     throw new Error(error.message);
@@ -215,8 +223,16 @@ const getOrderByAdminService = async (filter = {}) => {
     const totalPages = Math.ceil(totalItems / limit);
 
     let orders = await Order.find()
-      .populate("products.product")
-      .populate("products.product.category", "name")
+      .populate({
+        path: "shoppingCart",
+        populate: {
+          path: "products.product",
+          populate: {
+            path: "category"
+          }
+        }
+      })
+      .populate("user")
       .limit(limit)
       .skip(skip)
       .sort({ createdAt: -1 });
