@@ -14,9 +14,13 @@ const wishlistSchema = new mongoose.Schema({
                 ref: "Product",
                 required: true,
             },
+            createdAt: { 
+                type: Date, 
+                default: Date.now // Mặc định là thời điểm sản phẩm được thêm vào wishlist
+            },
         },
     ],
-    createdAt: { type: Date, default: Date.now },
+    //createdAt: { type: Date, default: Date.now },
 });
 
 const Wishlist = mongoose.model("wishlist", wishlistSchema);
