@@ -184,7 +184,15 @@ const getProductUserPurchasedService = async (userId) => {
     let orders = await Order.find({
       user: userId,
       status: "DELIVERED",
-    }).populate("products.product");
+    }).populate({
+      path: "shoppingCart",
+      populate: {
+        path: "products.product",
+        populate: {
+          path: "category"
+        }
+      }
+    });
 
     // Lấy tất cả review theo sản phẩm mà user đã mua
     const reviewedProductIds = new Set(
@@ -195,7 +203,7 @@ const getProductUserPurchasedService = async (userId) => {
     const products = [];
 
     for (const order of orders) {
-      for (const item of order.products) {
+      for (const item of order.shoppingCart.products) {
         const productId = item.product._id.toString();
         // Chỉ thêm sản phẩm nếu nó chưa có trong danh sách review
         if (!reviewedProductIds.has(productId) && !productSet.has(productId)) {
