@@ -72,19 +72,18 @@ const verifyOTPForgotPassword = async (req, res) => {
 const changePassword = async (req, res) => {
     try {
         // Lấy token từ headers
-        const token = req.headers['x-token'];
-        const { newPassword, confirmPassword } = req.body;
+        
+        const { newPassword, confirmPassword, token } = req.body;
 
-        console.log("New Token: ", token);
-
+        console.log(req.body);
         // Kiểm tra xem token có được cung cấp không
         if (!token) {
             return res.status(400).json({ error: "Token is missing from the request" });
         }
 
         // Gọi service để thay đổi mật khẩu
-        const response = await userService.changePasswordService({ newPassword, confirmPassword }, token);
-        return res.status(200).json(response);
+        const response = await userService.changePasswordService({ newPassword, confirmPassword, token });
+        return res.status(200).json(response); // Gửi phản hồi thay đổi mật khẩu thành công
     } catch (error) {
         return res.status(400).json({ error: error.message });
     }
@@ -115,6 +114,8 @@ const updateUser = async (req, res) => {
         return res.status(400).json({ error: error.message });
     }
 }
+
+
 
 
 

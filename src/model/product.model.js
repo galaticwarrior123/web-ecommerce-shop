@@ -16,6 +16,7 @@ const productchema = new mongoose.Schema({
     isActive: { type: Boolean, default: true },
     supplier: { type: String, required: true },
     origin: { type: String, required: true },
+    expired: { type: Date, required: true },
     promotion: { type: mongoose.Schema.Types.ObjectId, ref: "Promotion" },
 });
 

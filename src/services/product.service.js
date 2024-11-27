@@ -120,6 +120,7 @@ const createProductService = async (product, req, res) => {
 };
 
 const updateProductService = async (id, product, req, res) => {
+    
     try {
         const updatedProduct = await ProductModel.findById(id);
         if (!updatedProduct) {
@@ -140,6 +141,8 @@ const updateProductService = async (id, product, req, res) => {
         updatedProduct.sold_count = product.sold_count;
         updatedProduct.view_count = product.view_count;
         updatedProduct.badge = product.badge;
+        updatedProduct.origin = product.origin;
+        updatedProduct.supplier = product.supplier;
         await updatedProduct.save();
         return updatedProduct;
     }

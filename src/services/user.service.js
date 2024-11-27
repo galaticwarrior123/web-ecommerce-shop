@@ -241,32 +241,35 @@ const verifyOTPForgotPasswordService = async (otp, token) => {
 // }
 
 //Hàm đổi mật khẩu
-const changePasswordService = async (data, token) => {
+const changePasswordService = async (data) => {
     try {
         //Bước 4: Đổi mật khẩu
-        const { newPassword, confirmPassword } = data;
+        const { newPassword, confirmPassword, token } = data;
 
         if (newPassword !== confirmPassword) {
             throw new Error("New password and confirm password do not match");
         }
 
+        console.log("Token received: ", token);
+        console.log("New password received: ", newPassword + " " + confirmPassword);
+
         //Xác thực token
         const decoded = jwt.verify(token, JWT_SECRET);
-        const email = decoded.email;
+        console.log("Decoded token: ", decoded);
+        const email = decoded.user.email;
+        console.log("Email from token: ", email);
 
         const user = await User.findOne({ email });
-
+        console.log("User found: ", user);
         if (!user) {
             throw new Error("User not found");
         }
 
-        if (user.otpExpires < Date.now()) {
-            throw new Error("OTP is expired");
-        }
-
+        // if (user.otpExpires < Date.now()) {
+        //     throw new Error("OTP is expired");
+        // }
         user.password = await bcrypt.hash(newPassword, 10);
-        user.otp = null;
-        user.otpExpires = null;
+        user.otpExpires = Date.now();
         await user.save();
 
         return { message: 'Password is reset successfully' };
@@ -330,6 +333,8 @@ const updateUserService = async (id, data, req, res) => {
         throw e;
     }
 };
+
+
 
 
 async function uploadImage(file) {

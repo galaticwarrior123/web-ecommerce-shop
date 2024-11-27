@@ -12,7 +12,7 @@ routerAPI.post("/verified", UserController.verifiedService);
 
 routerAPI.post("/forgot-password", UserController.forgotPassword_sendOTP);
 routerAPI.post("/verify-otp_forgotpassword", UserController.verifyOTPForgotPassword);
-routerAPI.post("/change-password", UserController.changePassword);
+routerAPI.put("/change-password", authMiddleware, UserController.changePassword);
 
 routerAPI.get("/all", UserController.getAllUser);
 routerAPI.put("/update/:id", authMiddleware, upload.single("avatar"), UserController.updateUser);
