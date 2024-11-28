@@ -3,6 +3,7 @@ import { database, storage } from "../config/firebase.js";
 import { ref as databaseRef, child, push, update } from "firebase/database";
 import ProductModel from "../model/product.model.js";
 import PromotionModel from "../model/promotion.model.js";
+import Review from "../model/review.model.js";
 // Hàm lấy sản phẩm với bộ lọc
 const getProductService = async (filter = {}) => {
     try {
@@ -37,7 +38,7 @@ const getProductService = async (filter = {}) => {
             .skip(skip)
             .sort(sort)
             .populate("category", "name");
-        
+
         const filterProducts = products.filter(product => !product.isDeleted);
         return {
             filterProducts,
@@ -51,34 +52,251 @@ const getProductService = async (filter = {}) => {
 const getAllProducts = async () => {
     try {
         const products = await ProductModel.find(); // Lấy tất cả sản phẩm
-        const filterProducts = products.filter(product => !product.isDeleted);
+        const promotions = await PromotionModel.find(); // Lấy tất cả khuyến mãi
+        const reviews = await Review.find(); // Lấy tất cả đánh giá
+        
+        const currentDate = new Date(); // Ngày hiện tại
+
+        // Mức độ ưu tiên cho các badge
+        const badgePriority = {
+            'Phải thử': 3, // Ưu tiên cao nhất
+            'sale': 2,     // Ưu tiên trung bình
+            'new': 1       // Ưu tiên thấp nhất
+        };
+
+        // Lọc sản phẩm đủ điều kiện cho badge "Must Try"
+        const mustTryProducts = await Promise.all(products
+            .filter(product => !product.isDeleted && product.sold_count > 0) // Chưa bị xóa và có lượt mua
+            .map((product) => {
+                const productReviews = reviews.filter(review => review.product.toString() === product._id.toString());
+                
+                if (productReviews.length > 0) {
+                    // Tính điểm trung bình của sản phẩm
+                    const averageRating = productReviews.reduce((sum, review) => sum + review.rating, 0) / productReviews.length;
+
+                    // Nếu điểm trung bình lớn hơn 3, thì sản phẩm đủ điều kiện "Must Try"
+                    if (averageRating > 3) {
+                        return product;
+                    }
+                }
+            })
+            .filter(Boolean) // Lọc ra các sản phẩm không null
+            .slice(0, 5) // Lấy 5 sản phẩm đầu tiên
+        );
+
+        const filterProducts = products
+            .filter(product => !product.isDeleted) // Lọc sản phẩm chưa bị xóa
+            .map(product => {
+                const productPromotion = promotions.find(promo => promo.product.toString() === product._id.toString());
+
+                // Khởi tạo badge ban đầu
+                let badge = '';
+                let badgeRank = 0; // Mức độ ưu tiên của badge
+
+                // Kiểm tra khuyến mãi
+                if (productPromotion) {
+                    const startDate = new Date(productPromotion.startDate);
+                    const endDate = new Date(productPromotion.endDate);
+
+                    if (currentDate >= startDate && currentDate <= endDate) {
+                        // Sản phẩm đang trong thời gian khuyến mãi
+                        badge = 'sale';
+                        product.badge = 'sale';
+                        product.badgeRank = 2;
+                        badgeRank = Math.max(badgeRank, badgePriority['sale']); // Cập nhật mức độ ưu tiên
+                        product.sale_price = productPromotion.discount
+                            ? product.origin_price * (1 - productPromotion.discount / 100)
+                            : product.sale_price; // Tính giá khuyến mãi
+                    } else {
+                        // Nếu khuyến mãi chưa bắt đầu hoặc đã hết hạn
+                        product.sale_price = 0; // Reset giá khuyến mãi
+                    }
+                }
+
+                // Kiểm tra sản phẩm mới
+                const createdDate = new Date(product.createdAt);
+                const daysSinceCreation = (currentDate - createdDate) / (1000 * 60 * 60 * 24);
+
+                if (daysSinceCreation <= 15 && badge !== 'sale') {
+                    badge = 'new'; // Chỉ gán 'new' nếu không có 'sale'
+                    badgeRank = Math.max(badgeRank, badgePriority['new']); // Cập nhật mức độ ưu tiên
+                }
+
+                // Kiểm tra và gán badge "Must Try"
+                if (mustTryProducts.some(mustTry => mustTry._id.toString() === product._id.toString())) {
+                    badge = 'Phải thử';
+                    badgeRank = Math.max(badgeRank, badgePriority['Phải thử']); // Cập nhật mức độ ưu tiên
+                }
+
+                // Cập nhật badge và mức độ ưu tiên
+                product.badge = badge;
+                product.badgeRank = badgeRank;
+
+                return product;
+            });
+
+        // Sắp xếp các sản phẩm theo mức độ ưu tiên của badge
+        filterProducts.sort((a, b) => b.badgeRank - a.badgeRank);
+
+        // Lưu lại badge vào database
+        filterProducts.forEach(async product => {
+            await ProductModel.updateOne({ _id: product._id }, { badge: product.badge });
+        });
+
         return { success: true, data: filterProducts };
     } catch (error) {
         throw new Error('Lỗi server: ' + error.message);
     }
 };
 
+
+
+
+
+
 const getTop10BestSellingProducts = async () => {
     try {
-        const products = await ProductModel.find()
+        const products = await ProductModel.find({ isDeleted: false }) // Lọc sản phẩm chưa bị xóa
             .sort({ sold_count: -1 }) // Sắp xếp theo lượt bán giảm dần
             .limit(10); // Giới hạn 10 sản phẩm
-        return { success: true, data: products };
+
+        const promotions = await PromotionModel.find(); // Lấy tất cả khuyến mãi
+        const reviews = await Review.find(); // Lấy tất cả đánh giá
+        const currentDate = new Date(); // Ngày hiện tại
+
+        const mustTryProducts = products
+            .filter(product => product.sold_count > 0) // Sản phẩm có lượt bán > 0
+            .slice(0, 5); // Lấy 5 sản phẩm có lượt bán cao nhất
+
+        const updatedProducts = products.map(product => {
+            const productPromotion = promotions.find(promo => promo.product.toString() === product._id.toString());
+            let badge = '';
+            let badgeRank = 0; // Mức độ ưu tiên của badge
+
+            // Kiểm tra khuyến mãi
+            if (productPromotion) {
+                const startDate = new Date(productPromotion.startDate);
+                const endDate = new Date(productPromotion.endDate);
+
+                if (currentDate >= startDate && currentDate <= endDate) {
+                    // Sản phẩm đang trong thời gian khuyến mãi
+                    badge = 'sale';
+                    badgeRank = Math.max(badgeRank, 2); // Ưu tiên 'sale'
+                    product.sale_price = productPromotion.discount
+                        ? product.origin_price * (1 - productPromotion.discount / 100)
+                        : product.sale_price;
+                } else {
+                    product.sale_price = 0; // Reset giá khuyến mãi
+                }
+            }
+
+            // Kiểm tra sản phẩm mới
+            const createdDate = new Date(product.createdAt);
+            const daysSinceCreation = (currentDate - createdDate) / (1000 * 60 * 60 * 24);
+
+            if (daysSinceCreation <= 15 && badge !== 'sale') {
+                badge = 'new'; // Chỉ gán 'new' nếu không có 'sale'
+                badgeRank = Math.max(badgeRank, 1); // Ưu tiên 'new'
+            }
+
+            // Kiểm tra và gán badge "Must Try"
+            if (mustTryProducts.some(mustTry => mustTry._id.toString() === product._id.toString())) {
+                badge = 'Phải thử';
+                badgeRank = Math.max(badgeRank, 3); // Ưu tiên 'Phải thử' cao nhất
+            }
+
+            product.badge = badge;
+            product.badgeRank = badgeRank; // Lưu mức độ ưu tiên
+
+            return product;
+        });
+
+        // Sắp xếp các sản phẩm theo mức độ ưu tiên của badge
+        updatedProducts.sort((a, b) => b.badgeRank - a.badgeRank);
+
+        // lưu lại badge vào database
+        updatedProducts.forEach(async product => {
+            await ProductModel.updateOne({ _id: product._id }, { badge: product.badge });
+        });
+
+        return { success: true, data: updatedProducts };
     } catch (error) {
         throw new Error('Lỗi server: ' + error.message);
     }
 };
 
+
 const getTop10BestViewProducts = async () => {
     try {
-        const products = await ProductModel.find()
+        const products = await ProductModel.find({ isDeleted: false }) // Lọc sản phẩm chưa bị xóa
             .sort({ view_count: -1 }) // Sắp xếp theo lượt xem giảm dần
             .limit(10); // Giới hạn 10 sản phẩm
-        return { success: true, data: products };
+
+        const promotions = await PromotionModel.find(); // Lấy tất cả khuyến mãi
+        const currentDate = new Date(); // Ngày hiện tại
+
+        // Lọc top 5 sản phẩm có lượt bán > 0 và có lượt xem cao nhất
+        const mustTryProducts = products
+            .filter(product => product.sold_count > 0) // Sản phẩm có lượt bán > 0
+            .slice(0, 5); // Lấy 5 sản phẩm có lượt xem cao nhất
+
+        const updatedProducts = products.map(product => {
+            const productPromotion = promotions.find(promo => promo.product.toString() === product._id.toString());
+            let badge = '';
+            let badgeRank = 0; // Mức độ ưu tiên của badge
+
+            // Kiểm tra khuyến mãi
+            if (productPromotion) {
+                const startDate = new Date(productPromotion.startDate);
+                const endDate = new Date(productPromotion.endDate);
+
+                if (currentDate >= startDate && currentDate <= endDate) {
+                    // Sản phẩm đang trong thời gian khuyến mãi
+                    badge = 'sale';
+                    badgeRank = Math.max(badgeRank, 2); // Ưu tiên 'sale'
+                    product.sale_price = productPromotion.discount
+                        ? product.origin_price * (1 - productPromotion.discount / 100)
+                        : product.sale_price;
+                } else {
+                    product.sale_price = 0; // Reset giá khuyến mãi
+                }
+            }
+
+            // Kiểm tra sản phẩm mới
+            const createdDate = new Date(product.createdAt);
+            const daysSinceCreation = (currentDate - createdDate) / (1000 * 60 * 60 * 24);
+
+            if (daysSinceCreation <= 15 && badge !== 'sale') {
+                badge = 'new'; // Chỉ gán 'new' nếu không có 'sale'
+                badgeRank = Math.max(badgeRank, 1); // Ưu tiên 'new'
+            }
+
+            // Kiểm tra và gán badge "Must Try"
+            if (mustTryProducts.some(mustTry => mustTry._id.toString() === product._id.toString())) {
+                badge = 'Phải thử';
+                badgeRank = Math.max(badgeRank, 3); // Ưu tiên 'Phải thử' cao nhất
+            }
+
+            product.badge = badge;
+
+            return product;
+        });
+
+        // Sắp xếp các sản phẩm theo mức độ ưu tiên của badge
+        updatedProducts.sort((a, b) => b.badgeRank - a.badgeRank);
+
+        // lưu lại badge vào database
+        updatedProducts.forEach(async product => {
+            await ProductModel.updateOne({ _id: product._id }, { badge: product.badge });
+        });
+
+        return { success: true, data: updatedProducts };
     } catch (error) {
         throw new Error('Lỗi server: ' + error.message);
     }
 };
+
+
 
 // Hàm cập nhật badge cho sản phẩm
 const updateProductBadges = (allProducts, topSellingProducts, topViewedProducts) => {
@@ -123,13 +341,13 @@ const createProductService = async (product, req, res) => {
 };
 
 const updateProductService = async (id, product, req, res) => {
-    
+
     try {
         const updatedProduct = await ProductModel.findById(id);
         if (!updatedProduct) {
             throw new Error('Không tìm thấy sản phẩm');
         }
-        
+
         if (req.files) {
             for (let i = 0; i < req.files.length; i++) {
                 const image = await uploadImage(req.files[i]); // Upload ảnh
@@ -137,7 +355,7 @@ const updateProductService = async (id, product, req, res) => {
             }
         }
         updatedProduct.productName = product.productName;
-        updatedProduct.price = product.price;
+        updatedProduct.origin_price = product.origin_price;
         updatedProduct.description = product.description;
         updatedProduct.category = product.category;
         updatedProduct.quantity = product.quantity;
@@ -157,12 +375,12 @@ const updateProductService = async (id, product, req, res) => {
 
 const findProductsWithoutPromotion = async () => {
     try {
-        const products = await ProductModel.find();
+        const products = await ProductModel.find({ isDeleted: false });
         const promotionProducts = await PromotionModel.find();
         const productIds = promotionProducts.map(promotionProduct => promotionProduct.product.toString());
         const productsWithoutPromotion = products.filter(product => !productIds.includes(product._id.toString()));
         return { success: true, data: productsWithoutPromotion };
-       
+
     } catch (error) {
         throw new Error('Lỗi server: ' + error.message);
     }
@@ -216,7 +434,7 @@ const removeProductService = async (id) => {
         await ProductModel.updateOne({ _id: id }, { $set: { isDeleted: true } }); // Đánh dấu sản phẩm đã bị xóa
 
 
-        
+
         return { success: true, message: 'Xóa sản phẩm thành công' };
     }
     catch (error) {

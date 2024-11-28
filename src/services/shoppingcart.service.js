@@ -70,9 +70,10 @@ const addProductToCart = async (userId, productId, quantity) => {
         if (productIndex >= 0) {
             // If product already exists, update the quantity
             shoppingcart.products[productIndex].quantity += quantity;
+            shoppingcart.products[productIndex].priceAtOrder = product.sale_price > 0 ? product.sale_price : product.origin_price;
         } else {
             // If product is not in the cart, add a new entry
-            shoppingcart.products.push({ product: productId, quantity });
+            shoppingcart.products.push({ product: productId, quantity, priceAtOrder: product.sale_price > 0 ? product.sale_price : product.origin_price });
         }
 
         shoppingcart.totalAmount = calculateTotalAmount(shoppingcart.products);
@@ -108,6 +109,7 @@ const updateProductQuantity = async (shoppingCartId, productId, quantity) => {
     }
 
     shoppingCart.products[productIndex].quantity = quantity;
+    //shoppingCart.products[productIndex].priceAtOrder = shoppingCart.products[productIndex].product.sale_price > 0 ? shoppingCart.products[productIndex].product.sale_price : shoppingCart.products[productIndex].product.origin_price;
     await shoppingCart.save();
     return shoppingCart;
 }

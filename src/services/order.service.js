@@ -219,6 +219,7 @@ const getProductUserPurchasedService = async (userId) => {
       }
     });
 
+
     // Lấy tất cả review theo sản phẩm mà user đã mua
     const reviewedProductIds = new Set(
       (await Review.find({ user: userId })).map((review) => review.product.toString())

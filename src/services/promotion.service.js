@@ -67,6 +67,10 @@ const PromotionService = {
             if (!promotionProduct) {
                 throw new Error('Không tìm thấy khuyến mãi');
             }
+            const product = await ProductModel.findById(promotionProduct.product);
+            product.sale_price = 0;
+            await product.save();
+            
             return { message: 'Xóa khuyến mãi thành công' };
         } catch (error) {
             throw error;
