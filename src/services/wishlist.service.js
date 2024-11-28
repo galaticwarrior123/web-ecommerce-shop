@@ -13,6 +13,7 @@ const getWishlist = async (userId) => {
         const wishlist = await Wishlist.findOne({ user: userId })
             .populate({
                 path: "products.product",
+                match: { isDeleted: false }, // Lọc sản phẩm chưa bị xóa    
                 populate: { path: "category" } // Populate category
             });
         if (!wishlist) {

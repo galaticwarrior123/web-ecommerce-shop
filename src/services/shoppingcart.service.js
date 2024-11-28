@@ -15,6 +15,7 @@ const getShoppingCart = async (userId) => {
         const shoppingcart = await ShoppingCart.findOne({ user: userId, isActive: true, isPaid: false })
             .populate({
                 path: "products.product",
+                match: { isDeleted: false }, // Lọc sản phẩm chưa bị xóa
                 populate: { path: "category" } // Populate category
             });
         if (!shoppingcart) {

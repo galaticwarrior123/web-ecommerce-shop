@@ -89,14 +89,22 @@ async function deleteCategoryService(id) {
         // xóa hết sản phẩm trong danh mục đó 
         // xóa danh mục
 
+        // nếu có sản phẩm trong danh mục thì không thể xóa
+
         const listProduct = await ProductModel.find({ category: id }).exec();
         if (listProduct.length > 0) {
-            for (const product of listProduct) {
-                await ProductModel.findByIdAndDelete(product._id);
-            }
+            // for (const product of listProduct) {
+            //     await ProductModel.findByIdAndDelete(product._id);
+            // }
+            return { message: 'Không thể xóa danh mục này vì có sản phẩm trong danh mục', success: false };
         }
-        await CategoryModel.findByIdAndDelete(id);
-        return { message: 'Xóa danh mục thành công' };
+        else {
+            const category = await CategoryModel.findByIdAndDelete(id);
+            if (!category) {
+                throw new Error('Không tìm thấy danh mục');
+            }
+            return { message: 'Xóa danh mục thành công', success: true };
+        }
     } catch (error) {
         throw error;
     }

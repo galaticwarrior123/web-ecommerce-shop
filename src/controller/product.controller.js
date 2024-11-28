@@ -135,9 +135,9 @@ const findProductsWithoutPromotion = async (req, res) => {
 }
 const deleteProduct = async (req, res) => {
     const { id } = req.params; // Lấy ID từ request params
-
+    console.log(id);
     try {
-        const product = await productService.deleteProductService(id);
+        const product = await productService.removeProductService(id);
 
         if (!product) {
             return res.status(404).json({ message: 'Sản phẩm không tìm thấy' });

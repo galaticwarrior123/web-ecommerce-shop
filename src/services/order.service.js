@@ -212,6 +212,7 @@ const getProductUserPurchasedService = async (userId) => {
       path: "shoppingCart",
       populate: {
         path: "products.product",
+        match: { isDeleted: false },
         populate: {
           path: "category"
         }
@@ -259,6 +260,7 @@ const getOrderByAdminService = async (filter = {}) => {
         path: "shoppingCart",
         populate: {
           path: "products.product",
+          match: { isDeleted: false },
           populate: {
             path: "category"
           }

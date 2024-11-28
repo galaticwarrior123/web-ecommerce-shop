@@ -18,6 +18,7 @@ const productchema = new mongoose.Schema({
     origin: { type: String, required: true },
     expired: { type: Date, required: true },
     promotion: { type: mongoose.Schema.Types.ObjectId, ref: "Promotion" },
+    isDeleted: { type: Boolean, default: false },
 });
 
 const ProductModel = mongoose.model("Product", productchema);

@@ -37,8 +37,10 @@ const getProductService = async (filter = {}) => {
             .skip(skip)
             .sort(sort)
             .populate("category", "name");
+        
+        const filterProducts = products.filter(product => !product.isDeleted);
         return {
-            products,
+            filterProducts,
             totalPages,
         };
     } catch (error) {
@@ -49,7 +51,8 @@ const getProductService = async (filter = {}) => {
 const getAllProducts = async () => {
     try {
         const products = await ProductModel.find(); // Lấy tất cả sản phẩm
-        return { success: true, data: products };
+        const filterProducts = products.filter(product => !product.isDeleted);
+        return { success: true, data: filterProducts };
     } catch (error) {
         throw new Error('Lỗi server: ' + error.message);
     }
@@ -143,6 +146,7 @@ const updateProductService = async (id, product, req, res) => {
         updatedProduct.badge = product.badge;
         updatedProduct.origin = product.origin;
         updatedProduct.supplier = product.supplier;
+        updatedProduct.expired = product.expired;
         await updatedProduct.save();
         return updatedProduct;
     }
@@ -206,10 +210,12 @@ const findProductById = async (id) => {
     }
 };
 
-const deleteProductService = async (id) => {
+const removeProductService = async (id) => {
     try {
         await PromotionModel.findOneAndDelete({ product: id }); // Xóa khuyến mãi liên quan
-        await ProductModel.findByIdAndDelete(id);
+        await ProductModel.updateOne({ _id: id }, { $set: { isDeleted: true } }); // Đánh dấu sản phẩm đã bị xóa
+
+
         
         return { success: true, message: 'Xóa sản phẩm thành công' };
     }
@@ -248,7 +254,7 @@ export default {
     getAllProducts,
     createProductService,
     findProductById,
-    deleteProductService,
+    removeProductService,
     updateProductService,
     findProductsWithoutPromotion,
     getSimilarProducts,
