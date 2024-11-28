@@ -155,9 +155,13 @@ const removeProductFromCart = async (shoppingCartId, productId) => {
     }
 };
 
+
+
 export default {
     getShoppingCart,
     addProductToCart,
     updateProductQuantity,
-    removeProductFromCart
+    removeProductFromCart,
+
+    
 }

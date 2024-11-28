@@ -80,6 +80,8 @@ const deleteProductFromCartController = async (req, res) => {
     }
 };
 
+
+
 // const getShoppingCartController = async (req, res) => {
 //     try {
 //         const userId = "66f8e454f36fd9092033e20c"; // Sử dụng ID cụ thể để kiểm tra
@@ -105,5 +107,6 @@ export default {
     getShoppingCartControllerByUser,
     addProductToCartController,
     updateProductQuantity,
-    deleteProductFromCartController
+    deleteProductFromCartController,
+ 
 }

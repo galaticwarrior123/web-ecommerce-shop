@@ -9,9 +9,8 @@ import ShoppingCart from "../model/shoppingcart.model.js";
 import ProductModel from "../model/product.model.js";
 
 const createOrderService = async (data) => {
-
   const session = await mongoose.startSession(); // Khởi tạo session
-  session.startTransaction();
+  session.startTransaction(); // Bắt đầu transaction
 
   try {
     const {
@@ -22,13 +21,60 @@ const createOrderService = async (data) => {
       name,
       phone,
       address,
+      selectedProducts,
     } = data;
 
+    // Lấy thông tin giỏ hàng
+    const cartItems = await ShoppingCart.findById(shoppingCart)
+      .populate({ path: "products.product" })
+      .session(session);
+
+    if (!cartItems) {
+      throw new Error("Shopping cart not found");
+    }
+
+    const removedProducts = [];
+
+    // Cập nhật giỏ hàng theo `selectedProducts`
+    cartItems.products = cartItems.products.filter((item) => {
+      const selectedProduct = selectedProducts.find(
+        (p) => p.product === item.product._id.toString()
+      );
+      if (selectedProduct) {
+        item.quantity = selectedProduct.quantity; // Cập nhật số lượng
+        return true; // Giữ lại sản phẩm
+      } else {
+        removedProducts.push(item); // Thêm vào danh sách sản phẩm bị loại
+        return false; // Loại khỏi giỏ hàng
+      }
+    });
+
+    await cartItems.save({ session }); // Lưu giỏ hàng với session
+
+    // Tạo đơn hàng mới
+    const order = new Order({
+      user: userId,
+      shoppingCart: shoppingCart,
+      totalAmount,
+      paymentMethod,
+      name,
+      phone,
+      address,
+    });
+    await order.save({ session }); // Lưu đơn hàng với session
+
+    // Tạo giỏ hàng mới từ các sản phẩm bị loại
+    const newCart = new ShoppingCart({
+      user: userId,
+      products: removedProducts,
+      totalAmount: 0,
+      isActive: true,
+      isPaid: false,
+    });
+    await newCart.save({ session }); // Lưu giỏ hàng mới với session
 
 
-    const cartItems = await ShoppingCart.findById(shoppingCart).populate({ path: "products.product" }).session(session);
-
-
+    // Cập nhật số lượng sản phẩm trong kho
     for (const item of cartItems.products) {
       const product = await ProductModel.findById(item.product._id).session(session);
       if (!product) {
@@ -43,46 +89,24 @@ const createOrderService = async (data) => {
       await ProductModel.updateOne({ _id: item.product._id }, { $inc: { quantity: -item.quantity, sold_count: +item.quantity } }).session(session);
     }
 
-
-
-
-    // Tạo order
-    const order = new Order({
-      user: userId,
-      shoppingCart: shoppingCart,
-      totalAmount,
-      paymentMethod,
-      name,
-      phone,
-      address,
-    });
-    await order.save({ session });
-
-    // Cập nhật trạng thái giỏ hàng
+    // Đánh dấu giỏ hàng hiện tại là đã thanh toán và không còn hoạt động
     cartItems.isActive = false;
+    cartItems.isPaid = true;
     await cartItems.save({ session });
 
-    // Tạo một shoppingCart mới
-    const newCart = new ShoppingCart({
-      user: userId,
-      products: [],
-      totalAmount: 0,
-      isPaid: false,
-      isActive: true,
-    });
-    await newCart.save({ session });
-
     await session.commitTransaction(); // Xác nhận transaction
-    session.endSession();
+    session.endSession(); // Kết thúc session
 
-    return { success: true, order };
-
+    return { success: true, order, newCart };
   } catch (error) {
     await session.abortTransaction(); // Hủy transaction nếu có lỗi
-    session.endSession();
+    session.endSession(); // Kết thúc session
     throw new Error(error.message);
   }
 };
+
+
+
 
 
 const cancelOrderService = async (orderId, userId) => {

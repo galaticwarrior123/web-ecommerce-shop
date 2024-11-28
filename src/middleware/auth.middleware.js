@@ -4,7 +4,7 @@ const JWT_SECRET = process.env.JWT_SECRET || 'your_jwt_secret'; // Đảm bảo 
 
 const authMiddleware = (req, res, next) => {
   const token = req.header('Authorization');
-  console.log("Authorization Header:", token); // Ghi lại header Authorization
+  //console.log("Authorization Header:", token); // Ghi lại header Authorization
 
   if (!token) {
     return res.status(401).json({ message: 'No token, authorization denied' });
