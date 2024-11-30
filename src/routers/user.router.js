@@ -16,4 +16,6 @@ routerAPI.put("/change-password", authMiddleware, UserController.changePassword)
 
 routerAPI.get("/all", UserController.getAllUser);
 routerAPI.put("/update/:id", authMiddleware, upload.single("avatar"), UserController.updateUser);
+
+routerAPI.get("/shopping-history/:id", authMiddleware, UserController.getShoppingHistory);
 export default routerAPI;

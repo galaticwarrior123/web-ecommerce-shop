@@ -27,10 +27,9 @@ const markAsReadService = async (notificationId) => {
 const createNotificationService = async (data, notificationGateway = null, req, res) => {
     try {
         // Tạo thông báo mới trong cơ sở dữ liệu
-        const { content, type, recipient } = data;
+        const { content, type, recipient, link } = data;
         let userRecipient = null;
 
-        console.log('recipient: ', data.recipient);
 
         // kiểm tra nếu có recipient 
         if (data.recipient === 'admin') {

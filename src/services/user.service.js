@@ -11,6 +11,7 @@ import { ref as databaseRef, child, push, update } from "firebase/database";
 import ShoppingCart from '../model/shoppingcart.model.js';
 import mongoose from 'mongoose';
 import { console } from 'inspector';
+import Order from '../model/order.model.js';
 
 
 
@@ -313,31 +314,6 @@ const changePasswordService = async (data) => {
     }
 }
 
-// const changePasswordService = async (data) => {
-//     try {
-//         //Bước 4: Đổi mật khẩu
-//         const { email, otp, newPassword } = data;
-//         const user = await User.findOne({ email, otp });
-//         if (!user) {
-//             throw new Error("User not found");
-//         }
-//         if (user.otp !== otp) {
-//             throw new Error("OTP is incorrect");
-//         }
-//         if (user.otpExpires < Date.now()) {
-//             return res.status(400).send('OTP is expired');
-//         }
-
-//         user.password = await bcrypt.hash(newPassword, 10);
-//         user.otp = null;
-//         user.otpExpires = null;
-//         await user.save();
-
-//         // res.send('Password reset successful');
-//     } catch (error) {
-//         throw new Error(error.message);
-//     }
-// }
 
 const getAllUsersService = async () => {
     try {
@@ -363,6 +339,17 @@ const updateUserService = async (id, data, req, res) => {
         }
         await user.save();
         return user;
+    } catch (e) {
+        throw e;
+    }
+};
+
+// Hàm xem lịch sử mua hàng của user
+const getShoppingHistoryService = async (userId) => {
+    try {
+        const shoppingHistory = await Order.find({ user: userId }).populate('shoppingCart');
+        console.log("Shopping history: ", shoppingHistory);
+        return shoppingHistory;
     } catch (e) {
         throw e;
     }
@@ -413,4 +400,5 @@ export default {
 
     getAllUsersService,
     updateUserService,
+    getShoppingHistoryService,
 };

@@ -24,7 +24,6 @@ class NotificationGateway {
 
             // Xóa socket.id khỏi Map khi ngắt kết nối
             socket.on('disconnect', () => {
-                console.log('A user disconnected:', socket.id);
                 for (const [userId, sockets] of this.userSockets.entries()) {
                     if (sockets.has(socket.id)) {
                         sockets.delete(socket.id);

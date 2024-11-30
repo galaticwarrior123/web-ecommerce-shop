@@ -115,6 +115,15 @@ const updateUser = async (req, res) => {
     }
 }
 
+const getShoppingHistory = async (req, res) => {
+    try {
+        const { id } = req.params;
+        const shoppingHistory = await userService.getShoppingHistoryService(id);
+        return res.status(200).json(shoppingHistory);
+    } catch (error) {
+        return res.status(400).json({ error: error.message });
+    }
+}
 
 
 
@@ -129,6 +138,7 @@ export default {
     changePassword,
 
     getAllUser,
-    updateUser
+    updateUser,
+    getShoppingHistory
 };
 
