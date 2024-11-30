@@ -25,7 +25,7 @@ Execute this:
 ```
 npm start
 ```
-then the website should be running
+then the api should be running
 
 ## Authors
 - NguyenTrongPhuc - 21110846@student.hcmute.edu.vn
