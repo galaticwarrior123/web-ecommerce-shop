@@ -7,7 +7,8 @@ import Review from "../model/review.model.js";
 import mongoose, { Types } from "mongoose";
 import ShoppingCart from "../model/shoppingcart.model.js";
 import ProductModel from "../model/product.model.js";
-
+import NotificationModel from "../model/notification.model.js";
+import User from "../model/user.model.js";
 const createOrderService = async (data) => {
   const session = await mongoose.startSession(); // Khởi tạo session
   session.startTransaction(); // Bắt đầu transaction
@@ -94,10 +95,12 @@ const createOrderService = async (data) => {
     cartItems.isPaid = true;
     await cartItems.save({ session });
 
+    
+
     await session.commitTransaction(); // Xác nhận transaction
     session.endSession(); // Kết thúc session
-
-    return { success: true, order, newCart };
+    
+    return { success: true, order, newCart};
   } catch (error) {
     await session.abortTransaction(); // Hủy transaction nếu có lỗi
     session.endSession(); // Kết thúc session

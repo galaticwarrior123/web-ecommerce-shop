@@ -8,23 +8,40 @@ import { get } from 'http';
 import { getDownloadURL, ref as storageRef, uploadBytes } from "firebase/storage";
 import { database, storage } from "../config/firebase.js";
 import { ref as databaseRef, child, push, update } from "firebase/database";
+import ShoppingCart from '../model/shoppingcart.model.js';
+import mongoose from 'mongoose';
+import { console } from 'inspector';
+
+
 
 const signupService = async (data) => {
+    console.log("Data received: ", data);
+    const session = await mongoose.startSession(); // Bắt đầu session
+    session.startTransaction(); // Bắt đầu transaction
+    
     try {
         const { email, password, username, gender, phone, address } = data;
         const salt = await bcrypt.genSalt(10);
         const hashedPassword = await bcrypt.hash(password, salt);
 
-        let res = await User.create({
+        // Tạo người dùng
+        const user = await User.create([{
             email,
             password: hashedPassword,
             username,
             gender,
             phone,
             address,
-        });
-        return res;
+        }], { session }); // Truyền session để sử dụng trong transaction
+
+
+        await session.commitTransaction(); // Commit nếu không có lỗi
+        session.endSession();
+
+        return user[0];
     } catch (e) {
+        await session.abortTransaction(); // Rollback nếu có lỗi
+        session.endSession();
         throw e;
     }
 };
@@ -90,6 +107,8 @@ const sendOTPService = async (data) => {
 const verifiedService = async (data) => {
     try {
         const { email, otp } = data;
+
+        // Tìm user theo email
         const user = await User.findOne({ email });
         if (!user) {
             throw new Error("User not found");
@@ -97,13 +116,28 @@ const verifiedService = async (data) => {
         if (user.otp !== otp) {
             throw new Error("OTP is incorrect");
         }
+
+        // Cập nhật trạng thái user
         user.isVerified = true;
         user.otp = null;
-        await user.save();
+
+        console.log("User verified: ", user);
+        // Tạo giỏ hàng mới
+        const shoppingCart = new ShoppingCart({
+            user: user._id,
+            products: [],
+            totalAmount: 0,
+            isActive: true,
+            isPaid: false,
+        });
+
+        // Chạy song song cả hai thao tác
+        await Promise.all([user.save(), shoppingCart.save()]);
     } catch (error) {
         throw new Error(error.message);
     }
 };
+
 
 //XỬ LÝ QUÊN MẬT KHẨU 
 //Hàm quên mật khẩu và gửi OTP

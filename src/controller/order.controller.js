@@ -1,4 +1,6 @@
+
 import orderService from "../services/order.service.js";
+
 
 const postCreateOrder = async (req, res) => {
   try {
@@ -6,6 +8,7 @@ const postCreateOrder = async (req, res) => {
     const userId = req.userId;
     data.userId = userId;
     let rs = await orderService.createOrderService(data);
+
     return res.status(200).json({
       DT: rs,
       EM: "Create order successfully",

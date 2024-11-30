@@ -2,7 +2,7 @@ import express from "express";
 import dotenv from "dotenv";
 import cors from "cors";
 import connection from "./config/db/dbconnection.js";
-
+import http from "http";
 import userRoute from "./routers/user.router.js";
 import productRoute from "./routers/product.router.js";
 import categoryRoute from "./routers/category.router.js";
@@ -14,6 +14,7 @@ import reviewRoute from "./routers/review.router.js";
 import promotionRoute from "./routers/promotion.router.js";
 import wishlistRoute from "./routers/wishlist.router.js"
 import { swaggerDocs } from "./config/swagger/swagger.js";
+import NotificationGateway from "./gateway/notification.gateway.js";
 dotenv.config();
 
 const app = express();
@@ -36,13 +37,16 @@ swaggerDocs(app);
 
 const PORT = process.env.PORT || 4000;
 
-(async () => {
-  try {
-    await connection();
-    app.listen(PORT, () => {
-      console.log(`Example app listening on port ${PORT}`);
-    });
-  } catch (e) {
-    console.error(e);
-  }
-})();
+
+const server = http.createServer(app);
+server.listen(PORT, () => {
+  console.log(`Server is running on port ${PORT}`);
+});
+
+const notificationGateway = new NotificationGateway(server);
+app.set("notificationGateway", notificationGateway);
+
+
+connection();
+
+export default app;
