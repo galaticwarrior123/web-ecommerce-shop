@@ -283,7 +283,7 @@ const verifyOTPForgotPasswordService = async (otp, token) => {
 const changePasswordService = async (data) => {
     try {
         //Bước 4: Đổi mật khẩu
-        const { newPassword, confirmPassword, token } = data;
+        const { oldPassword, newPassword, confirmPassword, token } = data;
 
         console.log("Data received: ", data);
         if (newPassword !== confirmPassword) {
@@ -308,6 +308,10 @@ const changePasswordService = async (data) => {
         // if (user.otpExpires < Date.now()) {
         //     throw new Error("OTP is expired");
         // }
+        const isMatch = await bcrypt.compare(oldPassword, user.password);
+        if (!isMatch) {
+            throw new Error("Old password is incorrect");
+        }
         user.password = await bcrypt.hash(newPassword, 10);
         user.otpExpires = Date.now();
         await user.save();
