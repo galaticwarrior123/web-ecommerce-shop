@@ -347,8 +347,7 @@ const updateUserService = async (id, data, req, res) => {
 // Hàm xem lịch sử mua hàng của user
 const getShoppingHistoryService = async (userId) => {
     try {
-        const shoppingHistory = await Order.find({ user: userId }).populate('shoppingCart');
-        console.log("Shopping history: ", shoppingHistory);
+        const shoppingHistory = await Order.find({ user: userId })
         return shoppingHistory;
     } catch (e) {
         throw e;

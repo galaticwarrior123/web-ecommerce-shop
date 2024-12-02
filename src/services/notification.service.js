@@ -34,7 +34,6 @@ const createNotificationService = async (data, notificationGateway = null, req, 
         // kiểm tra nếu có recipient 
         if (data.recipient === 'admin') {
             const user = await User.findOne({ isAdmin: true });
-            console.log('user: ', user);
             userRecipient = user._id.toString();
             data.recipient = userRecipient;
         } else {

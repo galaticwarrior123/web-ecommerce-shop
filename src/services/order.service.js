@@ -156,6 +156,9 @@ const changeOrderStatusService = async (orderId, status) => {
       throw new Error("Order not found");
     }
     order.status = status;
+    if (status === "DELIVERED") {
+      order.updatedAt = Date.now();
+    }
     await order.save();
     // addNotificationJob({
     //   userId: order.user,

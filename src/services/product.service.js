@@ -446,7 +446,7 @@ const removeProductService = async (id) => {
 const getSimilarProducts = async (productId) => {
     try {
         const product = await ProductModel.findById(productId);
-        const products = await ProductModel.find({ category: product.category, _id: { $ne: productId } });
+        const products = await ProductModel.find({ category: product.category, _id: { $ne: productId } }).where('isDeleted').equals(false);
         return { success: true, data: products };
     } catch (error) {
         throw new Error('Lỗi server: ' + error.message);

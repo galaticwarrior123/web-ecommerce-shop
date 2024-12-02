@@ -32,6 +32,7 @@ const orderSchema = new mongoose.Schema({
   address: { type: String, required: true },
   phone: { type: String, required: true },
   createdAt: { type: Date, default: Date.now },
+  updatedAt: { type: Date},
 });
 
 const Order = mongoose.model("Order", orderSchema);
