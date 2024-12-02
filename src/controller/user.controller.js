@@ -74,8 +74,6 @@ const changePassword = async (req, res) => {
         // Lấy token từ headers
         
         const { newPassword, confirmPassword, token } = req.body;
-
-        console.log(req.body);
         // Kiểm tra xem token có được cung cấp không
         if (!token) {
             return res.status(400).json({ error: "Token is missing from the request" });
@@ -94,6 +92,21 @@ const changePassword = async (req, res) => {
     //     return res.status(400).json({error: error.message});
     // }
 }
+
+const resetPassword = async (req, res) => {
+    const { newPassword, confirmPassword, token } = req.body;
+
+    try {
+        const response = await userService.resetPasswordService({
+            newPassword,
+            confirmPassword,
+            token,
+        });
+        return res.status(200).json(response);
+    } catch (error) {
+        return res.status(400).json({ error: error.message });
+    }
+};
 
 
 const getAllUser = async (req, res) => {
@@ -136,7 +149,7 @@ export default {
     forgotPassword_sendOTP,
     verifyOTPForgotPassword,
     changePassword,
-
+    resetPassword,
     getAllUser,
     updateUser,
     getShoppingHistory
