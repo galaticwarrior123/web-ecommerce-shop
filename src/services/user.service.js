@@ -281,6 +281,7 @@ const changePasswordService = async (data) => {
         //Bước 4: Đổi mật khẩu
         const { newPassword, confirmPassword, token } = data;
 
+        console.log ("Data received: ", data);
         if (newPassword !== confirmPassword) {
             throw new Error("New password and confirm password do not match");
         }
@@ -313,6 +314,30 @@ const changePasswordService = async (data) => {
         throw new Error(error.message);
     }
 }
+
+
+const resetPasswordService = async ({ newPassword, confirmPassword, token }) => {
+    if (newPassword !== confirmPassword) {
+        throw new Error("New password and confirm password do not match");
+    }
+
+    try {
+        const decoded = jwt.verify(token, JWT_SECRET);
+        const email = decoded.email;
+
+        const user = await User.findOne({ email });
+        if (!user) {
+            throw new Error("User not found");
+        }
+
+        user.password = await bcrypt.hash(newPassword, 10);
+        await user.save();
+
+        return { message: "Password reset successfully" };
+    } catch (error) {
+        throw new Error(error.message);
+    }
+};
 
 
 const getAllUsersService = async () => {
@@ -388,14 +413,16 @@ async function uploadImage(file) {
 }
 
 export default {
+    resetPasswordService,
     signupService,
     sendOTPService,
     verifiedService,
     signinService,
-
+    
     forgotPassword_sendOTPService,
     verifyOTPForgotPasswordService,
     changePasswordService,
+    
 
     getAllUsersService,
     updateUserService,

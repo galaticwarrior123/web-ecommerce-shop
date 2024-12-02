@@ -9,11 +9,10 @@ routerAPI.post("/signup", UserController.postSignupUser);
 routerAPI.post("/login", UserController.postSigninUser);
 routerAPI.post("/send-otp", UserController.postSendOTP);
 routerAPI.post("/verified", UserController.verifiedService);
-
 routerAPI.post("/forgot-password", UserController.forgotPassword_sendOTP);
 routerAPI.post("/verify-otp_forgotpassword", UserController.verifyOTPForgotPassword);
 routerAPI.put("/change-password", authMiddleware, UserController.changePassword);
-
+routerAPI.post("/reset-password", UserController.resetPassword);
 routerAPI.get("/all", UserController.getAllUser);
 routerAPI.put("/update/:id", authMiddleware, upload.single("avatar"), UserController.updateUser);
 
