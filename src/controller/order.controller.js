@@ -105,8 +105,7 @@ const getProductUserPurchased = async (req, res) => {
 
 const getOrderByAdmin = async (req, res) => {
   try {
-    const { page } = req.query;
-    let rs = await orderService.getOrderByAdminService({ page });
+    let rs = await orderService.getOrderByAdminService();
     return res.status(200).json({
       DT: rs,
       EM: "Get order by admin successfully",

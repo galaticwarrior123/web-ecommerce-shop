@@ -95,12 +95,12 @@ const createOrderService = async (data) => {
     cartItems.isPaid = true;
     await cartItems.save({ session });
 
-    
+
 
     await session.commitTransaction(); // Xác nhận transaction
     session.endSession(); // Kết thúc session
-    
-    return { success: true, order, newCart};
+
+    return { success: true, order, newCart };
   } catch (error) {
     await session.abortTransaction(); // Hủy transaction nếu có lỗi
     session.endSession(); // Kết thúc session
@@ -251,18 +251,9 @@ const getProductUserPurchasedService = async (userId) => {
   }
 };
 
-const getOrderByAdminService = async (filter = {}) => {
+const getOrderByAdminService = async () => {
   try {
-    const limit = 10;
-    let skip = 0;
-    if (filter.page) {
-      skip = (filter.page - 1) * limit;
-    }
-
-    const totalItems = await Order.countDocuments();
-    const totalPages = Math.ceil(totalItems / limit);
-
-    let orders = await Order.find()
+    const orders = await Order.find()
       .populate({
         path: "shoppingCart",
         populate: {
@@ -274,13 +265,10 @@ const getOrderByAdminService = async (filter = {}) => {
         }
       })
       .populate("user")
-      .limit(limit)
-      .skip(skip)
       .sort({ createdAt: -1 });
 
     return {
       orders,
-      totalPages,
     };
   } catch (error) {
     throw new Error(error.message);
