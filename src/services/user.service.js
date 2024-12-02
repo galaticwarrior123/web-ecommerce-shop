@@ -19,9 +19,13 @@ const signupService = async (data) => {
     console.log("Data received: ", data);
     const session = await mongoose.startSession(); // Bắt đầu session
     session.startTransaction(); // Bắt đầu transaction
-    
+
     try {
         const { email, password, username, gender, phone, address } = data;
+        const finduser = await User.findOne({ email });
+        if (finduser) {
+            throw new Error("Email đã tồn tại");
+        }
         const salt = await bcrypt.genSalt(10);
         const hashedPassword = await bcrypt.hash(password, salt);
 
@@ -112,10 +116,10 @@ const verifiedService = async (data) => {
         // Tìm user theo email
         const user = await User.findOne({ email });
         if (!user) {
-            throw new Error("User not found");
+            throw new Error("Không tìm thấy User");
         }
         if (user.otp !== otp) {
-            throw new Error("OTP is incorrect");
+            throw new Error("OTP không đúng");
         }
 
         // Cập nhật trạng thái user
@@ -281,7 +285,7 @@ const changePasswordService = async (data) => {
         //Bước 4: Đổi mật khẩu
         const { newPassword, confirmPassword, token } = data;
 
-        console.log ("Data received: ", data);
+        console.log("Data received: ", data);
         if (newPassword !== confirmPassword) {
             throw new Error("New password and confirm password do not match");
         }
@@ -418,11 +422,11 @@ export default {
     sendOTPService,
     verifiedService,
     signinService,
-    
+
     forgotPassword_sendOTPService,
     verifyOTPForgotPasswordService,
     changePasswordService,
-    
+
 
     getAllUsersService,
     updateUserService,
