@@ -183,7 +183,8 @@ const getOrderByUserService = async (userId) => {
           }
         }
       })
-      .populate("user");
+      .populate("user")
+      .sort({ createdAt: -1 });
     return orders;
   } catch (error) {
     throw new Error(error.message);
